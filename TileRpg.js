@@ -456,6 +456,9 @@ function TileRpgFramework(){
 			this.board = false;
 			this.stackable = true;
 			this.amt = 1;
+			this.useon = function(on){
+				Trpg.invent.using = -1;
+			}
 			this.doaction = function(action){	}
 			this.useon = function(on){	}
 			this.getActions = function(){	return this.actions;	}
@@ -560,6 +563,9 @@ function TileRpgFramework(){
 			this.type = "Tin";
 			this.stackable = false;
 			this.actions = ["use","drop"];
+			this.useon = function(on){
+				Trpg.invent.using = -1;
+			}
 			this.doaction = function(action){
 				if (!exists(action))	action = this.getActions()[0];
 				switch (action){
@@ -583,6 +589,9 @@ function TileRpgFramework(){
 			this.type = "Copper";
 			this.stackable = false;
 			this.actions = ["use","drop"];
+			this.useon = function(on){
+				Trpg.invent.using = -1;
+			}
 			this.doaction = function(action){
 				if (!exists(action))	action = this.getActions()[0];
 				switch (action){
@@ -606,6 +615,9 @@ function TileRpgFramework(){
 			this.type = "Ladder";
 			this.stackable = false;
 			this.actions = ["use","drop"];
+			this.useon = function(on){
+				Trpg.invent.using = -1;
+			}
 			this.doaction = function(action){
 				if (!exists(action))	action = this.getActions()[0];
 				switch (action){
@@ -1487,6 +1499,8 @@ function TileRpgFramework(){
 				var wl = this.wl;
 				switch (action){
 					case "climb":
+						if (Trpg.Home.get("Gameplay").has("currentaction"))
+							Trpg.Home.get("Gameplay").remove("currentaction");
 						var newwl = wl.copy();
 						newwl.dim = "surface";
 						Trpg.board.save();
@@ -1512,6 +1526,8 @@ function TileRpgFramework(){
 				var wl = this.wl;
 				switch (action){
 					case "descend":
+						if (Trpg.Home.get("Gameplay").has("currentaction"))
+							Trpg.Home.get("Gameplay").remove("currentaction");
 						var newwl = wl.copy();
 						newwl.dim = "underground1";
 						Trpg.board.save();
