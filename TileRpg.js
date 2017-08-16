@@ -1672,16 +1672,16 @@ function TileRpgFramework(){
 		var tiles = {	
 			Grass:function Grass(){
 				this.type = "Grass";
-				this.actions = ["wall","dig"];
+				this.actions = ["dig"];
 				this.traits.burnable = true;
 				this.traits.walkable = true;
 				this.doaction = function(action){
 					if (!exists(action))	action = this.getActions()[0];
 					var wl = this.wl;
 					switch (action){
-						case "wall":
-							Trpg.board.setTile(new Trpg.Tile("CastleWall"),wl);
-							break;
+						//case "wall":
+						//	Trpg.board.setTile(new Trpg.Tile("CastleWall"),wl);
+						//	break;
 						case "dig":
 							var timer = new Utils.Timer(.7).start().setAuto(true,function(){
 								Trpg.board.setTile(new Trpg.Tile("Hole"),wl);
