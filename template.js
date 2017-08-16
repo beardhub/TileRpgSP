@@ -68,6 +68,12 @@ function assetsbit(){
 	Ast.loadImage("ladderdown","LadderDown.png");
 	Ast.loadImage("ladderup","LadderUp.png");
 	Ast.loadImage("dirt","Dirt.png");
+	Ast.loadImage("cwallu","CastleWallUp.png");
+	Ast.loadImage("cwalll","CastleWallL.png");
+	Ast.loadImage("cwallt","CastleWallT.png");
+	Ast.loadImage("cwallx","CastleWallX.png");
+	Ast.loadImage("cwallv","CastleWallVert.png");
+	Ast.loadImage("cwallc","CastleWallCenter.png");
 	Ast.loadImage("stone","Stone.png");
 	Ast.loadImage("tinore","TinOre.png");
 	Ast.loadImage("copperore","CopperOre.png");
