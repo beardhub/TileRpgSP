@@ -18,9 +18,10 @@ function TileRpgFramework(){
 		this.dy = function(other){
 			return 8*(other.wy-this.wy)+other.cy-this.cy;
 		}
-		this.shift = function(dx,dy){
+		this.shift = function(dx,dy,dim){
 			this.cx+=dx||0;
 			this.cy+=dy||0;
+			this.dim = dim || this.dim;
 			return this.legalize();
 		}
 		this.tochunk = function(){
@@ -53,6 +54,7 @@ function TileRpgFramework(){
 			this.cx = wl.cx;
 			this.cy = wl.cy;
 			this.dim = wl.dim;
+			return this;
 		}
 		this.copy = function(){
 			return new Trpg.WorldLoc(this.wx,this.wy,this.cx,this.cy,this.dim);
@@ -73,6 +75,8 @@ function TileRpgFramework(){
 		
 		function Title(){
 			var t = new UI.DBox();
+			//t.color = "grey";
+			t.cropper = false;
 			t.add(new (function(){
 				this.render = function(g){
 					g.font = "100px Arial";
@@ -130,7 +134,7 @@ function TileRpgFramework(){
 			g.add(h = new UI.DBox(800,0,400,800),"Hud");
 			g.add(i = new UI.DBox(0,300,400,500),"Hud.invent");
 			i.color = "rgb(96,96,96)";
-			h.color = h.bcolor = b.bcolor = "black";
+			h.color = h.bcolor = b.bcolor = b.color = "black";
 			return g;
 			/*H.add(new Utils.KeyListener("down","Escape",function(){H.prevtab()}));
 			Board.add(new Utils.KeyListener("down","p",function(){H.settab("Instructions");}));
@@ -226,6 +230,8 @@ function TileRpgFramework(){
 			ladderup:Ast.i("ladderup"),
 			ladderdown:Ast.i("ladderdown"),
 			dirt:Ast.i("dirt"),
+			bportal:Ast.i("bportal"),
+			gportal:Ast.i("gportal"),
 			stone:Ast.i("stone"),
 			cwallu:Ast.i("cwallu"),
 			cwalll:Ast.i("cwalll"),
@@ -1389,48 +1395,53 @@ function TileRpgFramework(){
 			function Default(wl){
 				this.spawn = wl.copy();
 				this.loc = wl.copy();
+				this.targ = wl.copy();
 				this.mx = this.my = 16;
 				this.range = 7;
 				this.pickwander = function(){
 					do {
 						this.targ = this.loc.copy().shift(Math.floor(Math.random()*10)-5,Math.floor(Math.random()*10)-5);
-					} while (this.targ.dist(this.spawn)>=this.range);// || !Trpg.board.getTile(this.targ).getTrait("walkable"));
-					
+					} while (this.targ.dist(this.spawn)>=this.range || !Trpg.board.getTile(this.targ).getTrait("walkable"));
 				}
-				this.pickwander();
 				this.update = function(d){
-					if (this.loc.dist(this.targ) > 0)
+					if (this.loc.dist(this.targ) > 0)// || (Math.abs(this.mx-16) > 2 || Math.abs(this.my-16) > 2))
 						this.move(d);
 					else if (Math.random()<.5*d)
 						this.pickwander();
 				}
 				this.move = function(d){
-					var a = Math.atan2(this.loc.dy(this.targ),this.loc.dx(this.targ));
+					var a = Math.atan2(this.loc.dy(this.targ)*32+16-this.my,this.loc.dx(this.targ)*32+16-this.mx);
 					this.mx+=Math.cos(a)*70*d;
 					this.my+=Math.sin(a)*70*d;
+					//if (this.loc.dist(this.targ) == 0)	return;
 					var loc = this.loc.copy();
 					if (this.mx < 0 || this.mx >= 32){
 						loc.cx+=Math.sign(Math.cos(a));
 						loc.legalize();
-						//if (!Trpg.board.getTile(loc).getTrait("walkable")){
-						//	loc.cx-=Math.sign(Math.cos(a));
-						//	this.mx-=Math.cos(a)*70*d;
-						//} else {
+						if (!Trpg.board.getTile(loc).getTrait("walkable")){
+							loc.cx-=Math.sign(Math.cos(a));
+							loc.legalize();
+							this.targ.load(loc);
+							this.mx-=Math.cos(a)*70*d;
+						} else {
 							this.mx-=32*Math.sign(Math.cos(a));
-						//}
+						}
 					}
 					if (this.my < 0 || this.my >= 32){
 						loc.cy+=Math.sign(Math.sin(a));
 						loc.legalize();
-						//if (!Trpg.board.getTile(loc).getTrait("walkable")){
-						//	loc.cy-=Math.sign(Math.sin(a));
-						//	this.my-=Math.sin(a)*70*d;
-						//} else {
+						if (!Trpg.board.getTile(loc).getTrait("walkable")){
+							loc.cy-=Math.sign(Math.sin(a));
+							loc.legalize();
+							this.targ.load(loc);
+							this.my-=Math.sin(a)*70*d;
+						} else {
 							this.my-=32*Math.sign(Math.sin(a));
-						//}
+						}
 					}
 					loc.legalize();
 					this.loc.load(loc);
+					//Trpg.board.aim = this.loc;
 				}
 			}
 			var ents = {
@@ -1442,19 +1453,19 @@ function TileRpgFramework(){
 					this.render = function(g){
 						var x = this.mx-Trpg.board.player.mx+Trpg.board.player.loc.dx(this.loc)*32;
 						var y = this.my-Trpg.board.player.my+Trpg.board.player.loc.dy(this.loc)*32;
-						g.drawImage(Trpg.imgs.deadseedling,x,y);
+						g.drawImage(Trpg.imgs.dirt,x,y);
 					}
 					return this;
 				}
 			}
 			return ents[type].apply(new Default(wl.copy()));
 		}
-		var guard = new this.Entity("Guard",new Trpg.WorldLoc(0,0,3,3));
+		//var guard = new this.Entity("Guard",new Trpg.WorldLoc(0,0,3,3));
 		this.update = function(d){
-			guard.update(d);
+			//guard.update(d);
 		}
 		this.render = function(g){
-			guard.render(g);
+			//guard.render(g);
 		}
 	})();
 	this.Structures = new (function(){
@@ -1527,15 +1538,17 @@ function TileRpgFramework(){
 						this.tlc.wx+=x;
 						this.tlc.wy+=y;
 						this.contchunks = [];
-						for (var i = 0; i < this.cw; i++)
-							for (var j = 0; j < this.ch; j++)
-								this.contchunks.push(this.tlc.copy().shift(8*i,8*j).toStr());
-						for (var i = 0; i < neighbs.length; i++)
-							for (var j = 0; j < this.contchunks.length; j++)
-								if (neighbs[i].inchunk(this.contchunks[j]))
-									return -1;
+						for (var f in this.layout){
+							for (var i = 0; i < this.cw; i++)
+								for (var j = 0; j < this.ch; j++)
+									this.contchunks.push(this.tlc.copy().shift(8*i,8*j,f).toStr());
+							for (var i = 0; i < neighbs.length; i++)
+								for (var j = 0; j < this.contchunks.length; j++)
+									if (neighbs[i].inchunk(this.contchunks[j]))
+										return -1;
+						}
 					//if (this.type == "Brumlidge")
-					//	console.log(this.tlc.toStr());
+					//console.log(this.contchunks);
 					return this;
 				}
 				this.fill = function(wl){
@@ -1547,14 +1560,25 @@ function TileRpgFramework(){
 					var dx = this.tlc.dx(wl);
 					var dy = this.tlc.dy(wl);
 					//console.log(dx+" "+dy);
-					for (var j = 0; j < 8; j++)
-						for (var i = 0; i < 8; i++){
-							var t = this.layout[j+dy][i+dx];
-							if (t !== "_"){
-								//console.log(t+" "+i+" "+j);
-								Trpg.board.setTile(new Trpg.Tile(this.acrs[t]),wl.copy().shift(i,j));
+					//for (var f in this.layout){
+						var f = wl.dim;
+						if (!exists(this.layout[f])) return;
+						//console.log(f);
+						//Trpg.board.save();
+						//Trpg.board.load(wl.copy().shift(0,0,f),true);
+						for (var j = 0; j < 8; j++)
+							for (var i = 0; i < 8; i++){
+								var t = this.layout[f][j+dy][i+dx];
+								if (t !== "_"){
+									if (t == t.toUpperCase())
+										this.special(t);
+									else 
+										Trpg.board.setTile(new Trpg.Tile(this.acrs[t]),wl.copy().shift(i,j,f));
+								}
 							}
-						}
+					//}
+					//Trpg.board.save();
+					//Trpg.board.load(Trpg.board.player.loc,true);
 				}
 			}
 			var structs = {
@@ -1604,16 +1628,25 @@ function TileRpgFramework(){
 						s:"StoneFloor",
 						g:"Grass"
 					}
-					this.layout = [
+					this.special = function(t){
+						switch (t){
+							case "1":
+								var wl = this.tlc.copy().shift(3,4);
+								Trpg.board.setTile(new Trpg.Tile("Portal")
+									.setground("stone")
+									.setdest(new Trpg.WorldLoc(-5,7,3,2)),wl);
+								break;
+						}
+					}
+					this.layout = {surface:[
 					"________",
 					"wwwwwww_",
 					"wsssssw_",
 					"wsssssw_",
+					"wss1ssw_",
 					"wsssssw_",
 					"wsssssw_",
-					"wsssssw_",
-					"wwgggww_"
-					];
+					"wwgggww_"]}
 					return this.spawn();
 				},
 				Brumlidge:function(){
@@ -1623,36 +1656,87 @@ function TileRpgFramework(){
 					this.acrs = {
 						w:"CastleWall",
 						s:"StoneFloor",
-						g:"Grass"
+						g:"Grass",
 					}
-					this.layout = [
-					"__wwwwwwwwwwwwwwwwwwww__",
-					"_wwssssssssssssssssssww_",
-					"wwssssssssssssssssssssww",
-					"wssssssssssssssssssssssw",
-					"wwwwwwwwwwwsswwwwwwwwwww",
-					"wssssssssssssssssssssssw",
-					"wssssssssssssssssssssssw",
-					"wsssssswwggggggwwssssssw",
-					"wsssssswggggggggwssssssw",
-					"wssssssgg______ggssssssw",
-					"wssssssgg______ggssssssw",
-					"wssssssgg______ggssssssw",
-					"wssssssgg______ggssssssw",
-					"wssssssgg______ggssssssw",
-					"wssssssgg______ggssssssw",
-					"wsssssswggggggggwssssssw",
-					"wsssssswwggggggwwssssssw",
-					"wssssssssssssssssssssssw",
-					"wssssssssssssssssssssssw",
-					"wssssssssssssssssssssssw",
-					"wsssswwwwsssssswwwwssssw",
-					"wwsssssswggggggwssssssww",
-					"gwwssssswggggggwssssswwg",
-					"ggwwwwwwwggggggwwwwwwwgg"]
+					this.special = function(t){
+						switch (t){
+							case "1":
+								var wl = this.tlc.copy().shift(6,21);
+								Trpg.board.setTile(new Trpg.Tile("LadderUp")
+									.setground("stone")
+									.setdest(wl.copy().shift(0,0,"floor1")),wl);
+								break;
+							case "2":
+								var wl = this.tlc.copy().shift(17,21);
+								Trpg.board.setTile(new Trpg.Tile("LadderUp")
+									.setground("stone")
+									.setdest(wl.copy().shift(0,0,"floor1")),wl);
+								break;
+							case "3":
+								var wl = this.tlc.copy().shift(6,21);
+								Trpg.board.setTile(new Trpg.Tile("LadderDown")
+									.setdest(wl),wl.copy().shift(0,0,"floor1"));
+								break;
+							case "4":
+								var wl = this.tlc.copy().shift(17,21);
+								Trpg.board.setTile(new Trpg.Tile("LadderDown")
+									.setdest(wl),wl.copy().shift(0,0,"floor1"));
+								break;
+						}
+					}
+					this.layout = {
+						surface:[
+						"__wwwwwwwwwwwwwwwwwwww__",
+						"_wwssssssssssssssssssww_",
+						"wwssssssssssssssssssssww",
+						"wssssssssssssssssssssssw",
+						"wssssssssssssssssssssssw",
+						"wssssssssssssssssssssssw",
+						"wwwwwwwwwwwsswwwwwwwwwww",
+						"wssssssssssssssssssssssw",
+						"wssssssssssssssssssssssw",
+						"wsssswwggggggggggwwssssw",
+						"wsssswggggggggggggwssssw",
+						"wssssgg__________ggssssw",
+						"wssssgg__________ggssssw",
+						"wssssgg__________ggssssw",
+						"wssssgg__________ggssssw",
+						"wsssswggggggggggggwssssw",
+						"wsssswwggggggggggwwssssw",
+						"wssssssssssssssssssssssw",
+						"wssssssssssssssssssssssw",
+						"wsssswwwwsssssswwwwssssw",
+						"wssssssswsssssswsssssssw",
+						"wwssss1swwwggwwws2ssssww",
+						"_wwssssswggggggwsssssww_",
+						"__wwwwwwwggggggwwwwwww__"],
+						floor1:[
+						"__wwwwwwwwwwwwwwwwwwww__",
+						"_wwssssssssssssssssssww_",
+						"wwssssssssssssssssssssww",
+						"wssssssssssssssssssssssw",
+						"wssssssssssssssssssssssw",
+						"wssssssssssssssssssssssw",
+						"wwwwwwwwwwwsswwwwwwwwwww",
+						"wssssssssssssssssssssssw",
+						"wssssssssssssssssssssssw",
+						"wsssswwwwwwwwwwwwwwssssw",
+						"wssssw____________wssssw",
+						"wssssw____________wssssw",
+						"wssssw____________wssssw",
+						"wssssw____________wssssw",
+						"wssssw____________wssssw",
+						"wssssw____________wssssw",
+						"wsssswwwwwwwwwwwwwwssssw",
+						"wssssssssssssssssssssssw",
+						"wssssssssssssssssssssssw",
+						"wsssswwwwsssssswwwwssssw",
+						"wssssssswsssssswsssssssw",
+						"wwssss3swwwwwwwws4ssssww",
+						"_wwsssssw______wsssssww_",
+						"__wwwwwww______wwwwwww__"]}
 					return this.spawn();
 				}
-				
 			}
 			return structs[type].apply(new Default(cwl.copy()));
 		}
@@ -1694,12 +1778,6 @@ function TileRpgFramework(){
 				if (this.structs[center.toStr()][i].inchunk(wl.copy().tochunk().toStr()))
 					this.structs[center.toStr()][i].fill(wl.copy());
 			return false;
-		} 
-		this.getsave = function(){
-			
-		}
-		this.load = function(save){
-			
 		}
 	})();
 	this.Tile = function(type,args){
@@ -1721,15 +1799,20 @@ function TileRpgFramework(){
 			}
 			this.setground = function(ground){
 				this.ground = ground;
+				return this;
 			}
 			this.setWl = function(wl){	
 				this.wl = wl;	
+				if (exists(this.ground))	return this;
 				switch (wl.dim){
+					case "floor1":
+						this.setground("stone");
+						break;
 					case "surface":
-						this.setground(Trpg.imgs.grass);
+						this.setground("grass");
 						break;
 					case "underground1":
-						this.setground(Trpg.imgs.dirt);
+						this.setground("dirt");
 						break;
 				}
 				return this;
@@ -1739,16 +1822,29 @@ function TileRpgFramework(){
 			this.hasAction = function(action){	return this.getActions().indexOf(action)!=-1;}
 			this.getDelay = function(action){	return 0;	}
 			this.doaction = function(action){}
-			this.loadJSON = function(json){
-				
+			this.load = function(save){
+				this.update(save.count);
+				this.ground = save.ground;
 			}
-			this.loadChanges = function(changes){return this;}
-			this.getChanges = function(){	return "none";	}
+			this.save = function(){
+				return {
+					type:this.type,
+					ground:this.ground,
+					count:exists(this.growtimer) ? this.growtimer.count : 0
+				}
+			}
 			this.update = function(d){}
 			this.render = function(g){}
 		}
 		var tiles = {	
-			Grass:function Grass(){
+			Void:function(){
+				this.type = "Void";
+				this.render = function(g){
+					//g.drawImage(Trpg.imgs.grass,0,0);
+				}
+				return this;
+			},
+			Grass:function(){
 				this.type = "Grass";
 				this.actions = ["dig"];
 				this.traits.burnable = true;
@@ -1759,6 +1855,9 @@ function TileRpgFramework(){
 					switch (action){
 						//case "wall":
 						//	Trpg.board.setTile(new Trpg.Tile("CastleWall"),wl);
+						//	break;
+						//case "portal":
+						//	Trpg.board.setTile(new Trpg.Tile("Portal"),wl);
 						//	break;
 						case "dig":
 							var timer = new Utils.Timer(.7).start().setAuto(true,function(){
@@ -1783,7 +1882,7 @@ function TileRpgFramework(){
 				}
 				return this;
 			},
-			PlowedDirt:function PlowedDirt(){
+			PlowedDirt:function(){
 				var that = this;
 				this.type = "PlowedDirt";
 				this.actions = ["dig"];
@@ -1814,7 +1913,7 @@ function TileRpgFramework(){
 				}
 				return this;
 			},
-			Hole:function Hole(){
+			Hole:function(){
 				this.type = "Hole";
 				this.traits.burnable = true;
 				this.traits.walkable = true;
@@ -1835,8 +1934,13 @@ function TileRpgFramework(){
 							if (!Trpg.invent.hasitem("Ladder")) break;
 							var timer = new Utils.Timer(3).start().setAuto(true,function(){
 								Trpg.invent.removeitem("Ladder");
-								Trpg.board.setTile(new Trpg.Tile("LadderDown"),wl);
-								var newwl = wl.copy();
+								Trpg.board.setTile(new Trpg.Tile("LadderDown").setdest(wl.copy().shift(0,0,"underground1")),wl);
+								Trpg.board.save();
+								Trpg.board.load(wl.copy().shift(0,0,"underground1"),true)
+								Trpg.board.setTile(new Trpg.Tile("LadderUp").setground("stone").setdest(wl),wl.copy().shift(0,0,"underground1"));
+								Trpg.board.save();
+								Trpg.board.load(Trpg.board.player.loc,true);
+								/*var newwl = wl.copy();
 								newwl.dim = "underground1";
 								Trpg.board.save();
 								Trpg.board.player.loc.load(newwl);//.copy();
@@ -1844,8 +1948,8 @@ function TileRpgFramework(){
 								Trpg.board.player.my = 16;
 								Trpg.board.load(Trpg.board.player.loc,true);
 								var lup = new Trpg.Tile("LadderUp");
-								Trpg.board.setTile(lup,newwl);
-								//lup.setground(Trpg.imgs.stone);
+								Trpg.board.setTile(lup,newwl);*/
+								//lup.setground("stone);
 							}).setKilloncomp(true);
 							timer.board = true;
 							timer.wl = wl;
@@ -1857,15 +1961,66 @@ function TileRpgFramework(){
 					}
 				}
 				this.render = function(g){
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.drawImage(Trpg.imgs.hole,0,0);
 				}
 				return this;
 			},
-			LadderUp:function LadderUp(){
-				this.type = "LadderUp";
+			Portal:function(){
+				this.type = "Portal";
 				this.traits.walkable = true;
-				this.actions = ["climb"];
+				this.actions = ["teleport"];
+				this.setdest = function(wl){
+					this.destwl = wl.copy();
+					return this;
+				}
+				this.doaction = function(action){
+					if (!exists(action))	action = this.getActions()[0];
+					var wl = this.wl;
+					var that = this;
+					switch (action){
+						case "climb":
+						case "teleport":
+							//console.log(that);
+							if (!exists(that.destwl))return;
+							if (Trpg.Home.get("Gameplay").has("currentaction"))
+								Trpg.Home.get("Gameplay").remove("currentaction");
+							Trpg.board.save();
+							Trpg.board.player.loc.load(this.destwl.copy());
+							Trpg.board.player.mx =
+							Trpg.board.player.my = 16;
+							Trpg.board.load(Trpg.board.player.loc,true);
+							break;
+					}
+				}
+				this.load = function(save){
+					this.ground = save.ground;
+					this.destwl = new Trpg.WorldLoc().load(JSON.parse(save.dest));
+				}
+				this.save = function(){
+					return {
+						type:this.type,
+						ground:this.ground,
+						count:0,//exists(this.growtimer) ? this.growtimer.count : 0
+						dest:JSON.stringify(this.destwl)
+					}
+				}
+				this.render = function(g){
+					g.drawImage(Trpg.imgs[this.ground],0,0);
+					g.drawImage(Trpg.imgs.bportal,0,0);
+				}
+				return this;
+			},
+			LadderUp:function(){
+				var p = new Trpg.Tile("Portal");
+				p.type = "LadderUp";
+				//this.traits.walkable = true;
+				p.actions = ["climb"];
+				/*
+				//this.setdest = function(wl){
+				//	this.destwl = wl.copy();
+				//	return this;
+				//}
 				this.doaction = function(action){
 					if (!exists(action))	action = this.getActions()[0];
 					var wl = this.wl;
@@ -1882,14 +2037,47 @@ function TileRpgFramework(){
 							Trpg.board.load(Trpg.board.player.loc,true);
 							break;
 					}
-				}
-				this.render = function(g){
-					g.drawImage(Trpg.imgs.stone,0,0);
+				}*/
+				p.render = function(g){
+					g.drawImage(Trpg.imgs[p.ground],0,0);
 					g.drawImage(Trpg.imgs.ladderup,0,0);
 				}
-				return this;
+				return p;
 			},
-			LadderDown:function LadderDown(){
+			LadderDown:function(){
+				var p = new Trpg.Tile("Portal");
+				p.type = "LadderDown";
+				//this.traits.walkable = true;
+				p.actions = ["climb"];
+				/*
+				//this.setdest = function(wl){
+				//	this.destwl = wl.copy();
+				//	return this;
+				//}
+				this.doaction = function(action){
+					if (!exists(action))	action = this.getActions()[0];
+					var wl = this.wl;
+					switch (action){
+						case "climb":
+							if (Trpg.Home.get("Gameplay").has("currentaction"))
+								Trpg.Home.get("Gameplay").remove("currentaction");
+							var newwl = wl.copy();
+							newwl.dim = "surface";
+							Trpg.board.save();
+							Trpg.board.player.loc.load(newwl);
+							Trpg.board.player.mx =
+							Trpg.board.player.my = 16;
+							Trpg.board.load(Trpg.board.player.loc,true);
+							break;
+					}
+				}*/
+				p.render = function(g){
+					g.drawImage(Trpg.imgs[this.ground],0,0);
+					g.drawImage(Trpg.imgs.ladderdown,0,0);
+				}
+				return p;
+			},
+			/*LadderDown:function(){
 				this.type = "LadderDown";
 				this.traits.walkable = true;
 				this.actions = ["descend"];
@@ -1911,12 +2099,12 @@ function TileRpgFramework(){
 					}
 				}
 				this.render = function(g){
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.drawImage(Trpg.imgs.ladderdown,0,0);
 				}
 				return this;
-			},
-			Seedling:function Seedling(){
+			},*/
+			Seedling:function(){
 				this.type = "Seedling";
 				this.actions = [""];
 				this.traits.walkable = true;
@@ -1935,13 +2123,13 @@ function TileRpgFramework(){
 					this.growtimer.update(d);
 				}
 				this.render = function(g){
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.drawImage(Trpg.imgs.seedling,0,0);
 					this.growtimer.renderp(g);
 				}
 				return this;
 			},
-			DeadSeedling:function DeadSeedling(){
+			DeadSeedling:function(){
 				this.type = "DeadSeedling";
 				this.actions = ["dig"];
 				this.traits.walkable = true;
@@ -1968,13 +2156,13 @@ function TileRpgFramework(){
 					//this.growtimer.update(d);
 				}
 				this.render = function(g){
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.drawImage(Trpg.imgs.deadseedling,0,0);
 					//this.growtimer.render(g);
 				}
 				return this;
 			},
-			Sapling:function Sapling(){
+			Sapling:function(){
 				this.type = "Sapling";
 				this.actions = [""];
 				var that = this;
@@ -2018,13 +2206,13 @@ function TileRpgFramework(){
 					this.growtimer.update(d);
 				}
 				this.render = function(g){
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.drawImage(Trpg.imgs.sapling,0,0);
 					this.growtimer.renderp(g);
 				}
 				return this;
 			},
-			Tree:function Tree(){
+			Tree:function(){
 				this.type = "Tree";
 				var hasseed = Math.random()<.3;
 				this.actions = ["chop","search"];
@@ -2070,13 +2258,13 @@ function TileRpgFramework(){
 					//this.growtimer.update(d);
 				}*/
 				this.render = function(g){
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.drawImage(Trpg.imgs.tree,0,0);
 					//this.growtimer.render(g);
 				}
 				return this;
 			},
-			FireBig:function FireBig(){
+			FireBig:function(){
 				this.type = "FireBig";
 				this.actions = [""];
 				var that = this;
@@ -2103,13 +2291,13 @@ function TileRpgFramework(){
 					}
 				}*/
 				this.render = function(g){
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.drawImage(Trpg.imgs.firebig,0,0);
 					this.growtimer.renderp(g);
 				}
 				return this;
 			},
-			FireSmall:function FireSmall(){
+			FireSmall:function(){
 				this.type = "FireSmall";
 				this.actions = [""];
 				var that = this;
@@ -2137,13 +2325,13 @@ function TileRpgFramework(){
 					}
 				}
 				this.render = function(g){
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.drawImage(Trpg.imgs.firesmall,0,0);
 					this.growtimer.renderp(g);
 				}
 				return this;
 			},
-			Stump:function Stump(){
+			Stump:function(){
 				this.type = "Stump";
 				this.actions = ["dig"];
 				this.traits.burnable = true;
@@ -2181,7 +2369,7 @@ function TileRpgFramework(){
 					//this.growtimer.update(d);
 				}*/
 				this.render = function(g){
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.drawImage(Trpg.imgs.stump,0,0);
 					//this.growtimer.render(g);
 				}
@@ -2195,7 +2383,7 @@ function TileRpgFramework(){
 					(Trpg.board.getTile(this.wl.copy().shift(1,0)).type == "CastleWall" ? "1" : "0")+
 					(Trpg.board.getTile(this.wl.copy().shift(0,1)).type == "CastleWall" ? "1" : "0")+
 					(Trpg.board.getTile(this.wl.copy().shift(-1,0)).type == "CastleWall" ? "1" : "0");
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.save();
 					g.translate(16,16);
 					switch (adjs){
@@ -2220,7 +2408,7 @@ function TileRpgFramework(){
 				}
 				return this;
 			},
-			Dirt:function Dirt(){
+			Dirt:function(){
 				this.type = "Dirt";
 				this.actions = ["dig"];
 				//this.traits.burnable = true;
@@ -2249,7 +2437,7 @@ function TileRpgFramework(){
 				}
 				return this;
 			},
-			StoneFloor:function StoneFloor(){
+			StoneFloor:function(){
 				this.type = "StoneFloor";
 				this.traits.walkable = true;
 				this.render = function(g){
@@ -2257,14 +2445,14 @@ function TileRpgFramework(){
 				}
 				return this;
 			},
-			Stone:function Stone(){
+			Stone:function(){
 				this.type = "Stone";
 				this.render = function(g){
 					g.drawImage(Trpg.imgs.stone,0,0);
 				}
 				return this;
 			},
-			TinOre:function TinOre(){
+			TinOre:function(){
 				this.type = "TinOre";
 				this.actions = ["dig"];
 				this.doaction = function(action){
@@ -2288,12 +2476,12 @@ function TileRpgFramework(){
 					}
 				}
 				this.render = function(g){
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.drawImage(Trpg.imgs.tinore,0,0);
 				}
 				return this;
 			},
-			CopperOre:function CopperOre(){
+			CopperOre:function(){
 				this.type = "CopperOre";
 				this.actions = ["dig"];
 				this.doaction = function(action){
@@ -2317,12 +2505,12 @@ function TileRpgFramework(){
 					}
 				}
 				this.render = function(g){
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.drawImage(Trpg.imgs.copperore,0,0);
 				}
 				return this;
 			},
-			BlueOre:function BlueOre(){
+			BlueOre:function(){
 				this.type = "BlueOre";
 				//this.actions = ["dig"];
 				//this.traits.burnable = true;
@@ -2350,7 +2538,7 @@ function TileRpgFramework(){
 					}
 				}*/
 				this.render = function(g){
-					g.drawImage(this.ground,0,0);
+					g.drawImage(Trpg.imgs[this.ground],0,0);
 					g.drawImage(Trpg.imgs.blueore,0,0);
 				}
 				return this;
@@ -2376,6 +2564,21 @@ function TileRpgFramework(){
 									return new Trpg.Tile("Tree");
 								else return new Trpg.Tile("Grass");
 							})().setWl(this.wl.copy().shift(j,i));
+							//var t = generateTile(Math.random()).setWl(this.wl.copy().shift(j,i));
+							row.push(t);
+							orow.push(t);
+						}
+						this.tiles.push(row);
+						this.origtiles.push(orow);
+					}
+					break;
+				case "floor1":
+				case "floor2":
+					for (var i = 0; i < 8; i++){
+						var row = [];
+						var orow = [];
+						for (var j = 0; j < 8; j++){
+							var t = new Trpg.Tile("Void").setWl(this.wl.copy().shift(j,i));
 							//var t = generateTile(Math.random()).setWl(this.wl.copy().shift(j,i));
 							row.push(t);
 							orow.push(t);
@@ -2421,8 +2624,9 @@ function TileRpgFramework(){
 		this.loadChanges = function(){
 			var changes = JSON.parse(Trpg.world.changes[this.code]);
 			for (var i = 0; i < changes.length; i++){
-				this.tiles[changes[i].i][changes[i].j] = new Trpg.Tile(changes[i].type).setWl(this.wl.copy().shift(changes[i].j,changes[i].i));
-				this.tiles[changes[i].i][changes[i].j].update(changes[i].count);
+				this.tiles[changes[i].i][changes[i].j] = new Trpg.Tile(changes[i].save.type).setWl(this.wl.copy().shift(changes[i].j,changes[i].i));
+				this.tiles[changes[i].i][changes[i].j].load(changes[i].save);
+				//this.tiles[changes[i].i][changes[i].j].update(changes[i].count);
 			}
 		}
 		this.getChanges = function(){
@@ -2430,9 +2634,10 @@ function TileRpgFramework(){
 			for (var i = 0; i < 8; i++)
 				for (var j = 0; j < 8; j++)
 					if (this.tiles[i][j].type!=this.origtiles[i][j].type)
-						if (exists(this.tiles[i][j].growtimer))
-							 changes.push({i:i,j:j,type:this.tiles[i][j].type,count:this.tiles[i][j].growtimer.count});
-						else changes.push({i:i,j:j,type:this.tiles[i][j].type,count:0});
+						changes.push({i:i,j:j,save:this.tiles[i][j].save()})
+						//if (exists(this.tiles[i][j].growtimer))
+						//	 changes.push({i:i,j:j,type:this.tiles[i][j].type,count:this.tiles[i][j].growtimer.count});
+						//else changes.push({i:i,j:j,type:this.tiles[i][j].type,count:0});
 			if (changes.length == 0)
 				return "none";
 			if (Trpg.world.changed.indexOf(this.code)==-1)

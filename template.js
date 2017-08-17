@@ -36,11 +36,18 @@ function init(){
 	//U.camera.centerZero();
 	UU.add(U);
 	var lasttime=Date.now()/1000;
+	var adt = 0;
 	M.setLoop(function(){
 		var before=Date.now()/1000;
 		var dt=before-lasttime;
 		lasttime=before;
-		UU.update(dt);
+		adt+=dt;
+		var t = 1/66;
+		while (adt >= t){
+			adt-=t;
+			UU.update(t);
+		}
+		//UU.update(dt);
 		var g=M.canvas.getContext("2d");
 		g.clearRect(0,0,M.canvas.width,M.canvas.height);
 		UU.render(g);
@@ -68,6 +75,8 @@ function assetsbit(){
 	Ast.loadImage("ladderdown","LadderDown.png");
 	Ast.loadImage("ladderup","LadderUp.png");
 	Ast.loadImage("dirt","Dirt.png");
+	Ast.loadImage("bportal","BluePortal.png");
+	Ast.loadImage("gportal","GreyPortal.png");
 	Ast.loadImage("cwallu","CastleWallUp.png");
 	Ast.loadImage("cwalll","CastleWallL.png");
 	Ast.loadImage("cwallt","CastleWallT.png");
