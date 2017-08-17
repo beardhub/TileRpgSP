@@ -46,6 +46,10 @@ function init(){
 		while (adt >= t){
 			adt-=t;
 			UU.update(t);
+			if (adt>5){
+				adt-=5;
+				UU.update(5);
+			}
 		}
 		//UU.update(dt);
 		var g=M.canvas.getContext("2d");
