@@ -79,6 +79,10 @@ function assetsbit(){
 	Ast.loadImage("ladderdown","LadderDown.png");
 	Ast.loadImage("ladderup","LadderUp.png");
 	Ast.loadImage("dirt","Dirt.png");
+	Ast.loadImage("furnace","Furnace.png");
+	Ast.loadImage("anvil","Anvil.png");
+	Ast.loadImage("bronzebar","BronzeBar.png");
+	Ast.loadImage("ironbar","IronBar.png");
 	Ast.loadImage("bportal","BluePortal.png");
 	Ast.loadImage("gportal","GreyPortal.png");
 	Ast.loadImage("cwallu","CastleWallUp.png");
