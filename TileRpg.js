@@ -18,6 +18,12 @@ function TileRpgFramework(){
 		this.dy = function(other){
 			return 8*(other.wy-this.wy)+other.cy-this.cy;
 		}
+		this.getadjs = function(){
+			return [(this.copy().shift(0,-1)),
+					(this.copy().shift(1,0)),
+					(this.copy().shift(0,1)),
+					(this.copy().shift(-1,0))]
+		}
 		this.shift = function(dx,dy,dim){
 			this.cx+=dx||0;
 			this.cy+=dy||0;
@@ -339,7 +345,7 @@ function TileRpgFramework(){
 			}
 		}
 	}
-	function Player(wl){
+	/*function Player(wl){
 		this.loc = wl || new Trpg.WorldLoc(0,0,3,3);
 		this.mx = this.my = 16;
 		/*return {
@@ -363,8 +369,8 @@ function TileRpgFramework(){
 					return this.gettool().rmin <= d && this.gettool().rmax >= d && this.tool != "none";
 				},
 				tools:{}*
-			};*/
-	}
+			};*
+	}*/
 	function sameState(s1, s2){
 		s1 = JSON.stringify(s1);
 		s2 = JSON.stringify(s2);
@@ -498,11 +504,38 @@ function TileRpgFramework(){
 			this.type = "default";
 			this.board = false;
 			this.stackable = false;
+			this.actions = ["use","drop"];
 			this.amt = 1;
+			this.setamt = function(amt){
+				this.amt = amt;
+				return this;
+			}
 			this.useon = function(on){
 				Trpg.invent.using = -1;
 			}
-			this.doaction = function(action){	}
+			this.doaction = function(action){
+				if (!exists(action))	action = this.getActions()[0];
+				switch (action){
+					case "light":
+						if (!Trpg.board.getTile(Trpg.board.cloc).getTrait("burnable"))
+							return;
+						var timer = new Utils.Timer(1.3).start().setAuto(true,function(){
+							Trpg.board.setTile(new Trpg.Tile("FireBig"),Trpg.board.cloc);
+							Trpg.invent.removeitem(that);
+						}).setKilloncomp(true);
+						timer.board = false;
+						timer.space = this.space;
+						Trpg.Home.add(timer,"Gameplay.currentaction");
+						//Trpg.board.setTile(Hole.call(new Default()),this.wl);
+						break;
+					case "use":
+						Trpg.invent.using = this;
+						break;
+					case "drop":
+						Trpg.invent.dropitem(this);
+						break;
+				}
+			}
 			this.useon = function(on){	}
 			this.getActions = function(){	return this.actions;	}
 			this.hasAction = function(action){	return this.getActions().indexOf(action)!=-1;}
@@ -521,7 +554,8 @@ function TileRpgFramework(){
 							break;
 						case "FireSmall":
 							//var timer = new Utils.Timer(1).start().setAuto(true,function(){
-								Trpg.board.setTile(new Trpg.Tile("FireBig"),on.wl);
+								on.doaction("fuel");
+								//Trpg.board.setTile(new Trpg.Tile("FireBig"),on.wl);
 								Trpg.invent.removeitem(that);
 							// }).setKilloncomp(true);
 							//timer.board = false;
@@ -652,15 +686,15 @@ function TileRpgFramework(){
 				}
 				return this;
 			},
-			BronzeBar:function(){
-				this.type = "BronzeBar";
+			Bar:function(type){
+				this.type = type+"Bar";
 				this.render = function(g,x,y){
-					g.drawImage(Ast.i("bronzebar"),x,y);
-					g.fillStyle = "yellow";
-					if (this.stackable)
-						g.fillText(this.amt,x+5,y+10);
+					g.drawImage(Ast.i(type.toLowerCase()+"bar"),x,y);
 				}
 				return this;
+			},
+			BronzeBar:function(){
+				return items.Bar.call(this,"Bronze");
 			},
 			BronzeDagger:function(){
 				this.type = "BronzeDagger";
@@ -814,6 +848,47 @@ function TileRpgFramework(){
 			},
 			Hammer:function(){
 				this.type = "Hammer";
+				this.actions = ["use","drop"];
+				this.useon = function(on){
+					Trpg.invent.using = -1;
+					switch (on.type){
+						case "Tinderbox":
+							this.doaction("light");
+							break;
+						case "FireSmall":
+							//var timer = new Utils.Timer(1).start().setAuto(true,function(){
+								on.doaction("fuel");
+								//Trpg.board.setTile(new Trpg.Tile("FireBig"),on.wl);
+								Trpg.invent.removeitem(that);
+							// }).setKilloncomp(true);
+							//timer.board = false;
+							//timer.space = this.space;
+							//Trpg.Home.add(timer,"Gameplay.currentaction");
+					}
+				}
+				this.doaction = function(action){
+					if (!exists(action))	action = this.getActions()[0];
+					switch (action){
+						case "light":
+							if (!Trpg.board.getTile(Trpg.board.cloc).getTrait("burnable"))
+								return;
+							var timer = new Utils.Timer(1.3).start().setAuto(true,function(){
+								Trpg.board.setTile(new Trpg.Tile("FireBig"),Trpg.board.cloc);
+								Trpg.invent.removeitem(that);
+							}).setKilloncomp(true);
+							timer.board = false;
+							timer.space = this.space;
+							Trpg.Home.add(timer,"Gameplay.currentaction");
+							//Trpg.board.setTile(Hole.call(new Default()),this.wl);
+							break;
+						case "use":
+							Trpg.invent.using = this;
+							break;
+						case "drop":
+							Trpg.invent.dropitem(this);
+							break;
+					}
+				}
 				this.render = function(g,x,y){
 					g.fillStyle = "yellow";
 					g.fillText("Hammer",x+5,y+20);
@@ -824,6 +899,41 @@ function TileRpgFramework(){
 			},
 		}
 		return items[type].apply(new Default());
+	}
+	function feedback(str,x,y,l){
+		var sx = x;
+		var sy = y;
+		this.init = function(){
+			this.timer = new Utils.Timer(l||2).start();
+			this.rl = 2;
+			/*var timer = new Utils.Timer(delay).start().setAuto(true,function(){
+				infunc();
+			}).setKilloncomp(true);*/
+		}
+		this.update = function(d){
+			this.timer.update(d);
+			if (this.timer.consume())
+				this.container.remove(this);
+		}
+		this.render = function(g){
+			var x = sx;
+			var y = sy;
+			if (this.container.systemname=="Board"){
+				x-=Trpg.board.mx;
+				y-=Trpg.board.my;
+			}
+			var w = g.measureText(str).width+5;
+			var h = g.measureText("M").width+5;
+			g.fillStyle = "white";
+			g.globalAlpha = .5;
+			g.fillRect(x-w/2,y-h/2,w,h);
+			g.globalAlpha = 1;
+			g.fillStyle = "black";
+			//Drw.drawCText(g,str,sx-Trpg.board.mx,sy-Trpg.board.my);
+			//g.font = (parseInt(g.font.substring(0,g.font.indexOf("px")))-1)+g.font.substring(g.font.indexOf("px"));
+			//g.fillStyle = "white";
+			Drw.drawCText(g,str,x,y);
+		}
 	}
 	function ToolBox(){
 		var box = new UI.DBox();
@@ -905,14 +1015,15 @@ function TileRpgFramework(){
 			for (var i = 0; i < actions.length; i++){
 				var btn = new UI.Button(0,i*35,135,35);//Math.floor(i/s)*75,i%s*25,75,25);
 				btn.toolname = actions[i];
-				btn.inrender = function(g){
+				btn.text = actions[i].charAt(0).toUpperCase()+actions[i].substring(1);
+				/*btn.inrender = function(g){
 					//g.fillStyle = "darkgrey";
 					//if (box.curtool == this.toolname)
 						g.fillStyle = "black";
 					g.font = "15px Arial";
 					var a = this.toolname;
 					Drw.drawCText(g,a.charAt(0).toUpperCase()+a.substring(1),this.w/2,this.h/2);
-				}
+				}*/
 				btn.onclick = function(){
 					if (this.toolname.indexOf("->")!=-1)
 						Trpg.invent.using.useon(tile);
@@ -1047,18 +1158,6 @@ function TileRpgFramework(){
 				}
 			}
 		})(),"toolclicker");
-		/*
-		box.addTool("chop",1,1);
-		box.addTool("dig",0,1);
-		box.addTool("plant",1,1);
-		box.addTool("kill",1,3);
-		box.addTool("burn1",0,1);
-		box.addTool("burn2",0,1);
-		box.addTool("burn3",0,1);
-		box.addTool("burn4",0,1);
-		box.addTool("burn5",0,1);
-		box.addTool("burn6",0,1);*/
-		//console.log("tool made");
 		return box;
 	}
 	this.Board = function(){
@@ -1154,7 +1253,7 @@ function TileRpgFramework(){
 		Trpg.Structures.init();
 			//this.player = new Player();
 			this.mx = this.my = 16;
-			this.cloc = new Trpg.WorldLoc(0,0,3,3);
+			this.cloc = new Trpg.WorldLoc(-1,1,3,3);
 			this.running = false;
 			this.runenergy = 100;
 			//this.cloc.dim = "underground1";
@@ -1911,7 +2010,7 @@ function TileRpgFramework(){
 			this.getTrait = function(trait){
 				if (this.traits.hasOwnProperty(trait))
 					return this.traits[trait];
-				return false
+				return false;
 			}
 			this.setState = function(loadobj,state){
 				//	this = object to save state into
@@ -1922,21 +2021,18 @@ function TileRpgFramework(){
 				this.ground = ground;
 				return this;
 			}
+			this.getdefground = function(wl){
+				switch (wl.dim){
+					case "floor2":
+					case "floor1":			return "stone";
+					case "surface":			return "grass";
+					case "underground1":	return "stone";
+				}
+			}
 			this.setWl = function(wl){	
 				this.wl = wl;	
 				if (exists(this.ground))	return this;
-				switch (wl.dim){
-					case "floor1":
-						this.setground("stone");
-						break;
-					case "surface":
-						this.setground("grass");
-						break;
-					case "underground1":
-						this.setground("dirt");
-						break;
-				}
-				return this;
+				return this.setground(this.getdefground(wl));
 			}
 			this.actions = [""];
 			this.getActions = function(){	return this.actions;	}
@@ -2038,7 +2134,7 @@ function TileRpgFramework(){
 				this.type = "Hole";
 				this.traits.burnable = true;
 				this.traits.walkable = true;
-				this.actions = ["fill","excavate"];
+				this.actions = ["fill","plant","excavate"];
 				this.doaction = function(action){
 					if (!exists(action))	action = this.getActions()[0];
 					var wl = this.wl;
@@ -2061,22 +2157,19 @@ function TileRpgFramework(){
 								Trpg.board.setTile(new Trpg.Tile("LadderUp").setground("stone").setdest(wl),wl.copy().shift(0,0,"underground1"));
 								Trpg.board.save();
 								Trpg.board.load(Trpg.board.cloc,true);
-								/*var newwl = wl.copy();
-								newwl.dim = "underground1";
-								Trpg.board.save();
-								Trpg.board.cloc.load(newwl);//.copy();
-								Trpg.board.mx =
-								Trpg.board.my = 16;
-								Trpg.board.load(Trpg.board.cloc,true);
-								var lup = new Trpg.Tile("LadderUp");
-								Trpg.board.setTile(lup,newwl);*/
-								//lup.setground("stone);
 							}).setKilloncomp(true);
 							timer.board = true;
 							timer.wl = wl;
 							Trpg.Home.add(timer,"Gameplay.currentaction");
 							break;
 						case "plant":
+							if (!Trpg.invent.hasitem("Seed")){
+								Trpg.board.container.add(new feedback("You don't have any seeds",
+								Trpg.board.cloc.dx(wl)*32+16+Trpg.board.container.camera.x,
+								Trpg.board.cloc.dy(wl)*32+Trpg.board.container.camera.y,1.5),"feedback");
+								return;
+							}
+							Trpg.invent.removeitem("Seed");
 							Trpg.board.setTile(new Trpg.Tile("Seedling"),wl);
 							break;
 					}
@@ -2207,9 +2300,13 @@ function TileRpgFramework(){
 					var wl = this.wl;
 					switch (action) {
 						case "smelt":
-							if (!(Trpg.invent.hasitem("Tin") && Trpg.invent.hasitem("Copper")))
+							if (!(Trpg.invent.hasitem("Tin") && Trpg.invent.hasitem("Copper"))){
+								Trpg.board.container.add(new feedback("You need a some tin and copper ore",
+								Trpg.board.cloc.dx(wl)*32+16+Trpg.board.container.camera.x,
+								Trpg.board.cloc.dy(wl)*32+Trpg.board.container.camera.y,1.5),"feedback");
 								return;
-							var timer = new Utils.Timer(2).start().setAuto(true,function(){
+							}
+							var timer = new Utils.Timer(1.3).start().setAuto(true,function(){
 								if (!(Trpg.invent.hasitem("Tin") && Trpg.invent.hasitem("Copper")))
 									return;
 								Trpg.invent.removeitem("Tin");
@@ -2237,18 +2334,18 @@ function TileRpgFramework(){
 					var wl = this.wl.copy();
 					switch (action) {
 						case "smith":
-							if (!Trpg.invent.hasitem("BronzeBar"))
-								return;
 							var z = Trpg.Home.get("Gameplay.Board").camera.getzoom();
-							console.log(Trpg.invent.getitemamt("BronzeBar"));
-							var menu = new UI.DBox(0,0,135,35*Trpg.invent.getitemamt("BronzeBar"));//wl.x()*32+16-135/2/z,(wl.y()+.5)*32,135/z,2*35/z);
-							//var menu = new UI.DBox(32*(wl.x()-Trpg.board.cloc.x()),32*(wl.y()-Trpg.board.cloc.y()),135,70);
+							if (!Trpg.invent.hasitem("BronzeBar")||!Trpg.invent.hasitem("Hammer")){
+								Trpg.board.container.add(new feedback("You need a hammmer and some bronze bars",
+								Trpg.board.cloc.dx(wl)*32+16+Trpg.board.container.camera.x,
+								Trpg.board.cloc.dy(wl)*32+Trpg.board.container.camera.y,1.5),"feedback");
+								return;
+							}
+							//console.log(Trpg.invent.getitemamt("BronzeBar"));
+							var menu = new UI.DBox(0,0,135,35*Trpg.invent.getitemamt("BronzeBar"));
+							menu.cropped = false;
 							Trpg.Home.add(menu,"Gameplay.");
 							menu.add({
-								init:function(){
-									//this.startx = this.container.x+Trpg.Home.get("Gameplay.Board").camera.x;
-									//this.starty = this.container.y
-								},
 								mousemove:function(e,m){
 									if (!this.container.mouseonbox(m))
 										this.container.removeme = true;
@@ -2257,24 +2354,12 @@ function TileRpgFramework(){
 									this.container.removeme = true;
 								},
 								update:function(){
-									this.container.x = 400+Trpg.board.cloc.dx(wl)*32*z-z*Trpg.board.mx;
-									//+Trpg.Home.get("Gameplay.Board").camera.x; //Trpg.Home.get("Gameplay.Board").camera.x/Trpg.Home.get("Gameplay.Board").cumZoom()*this.container.cumZoom();
-									this.container.y = 400+Trpg.board.cloc.dy(wl)*32*z-z*Trpg.board.my;
-									//this.container.y = Trpg.board.cloc.dy(wl)*32*z-Trpg.Home.get("Gameplay.Board").camera.y; //Trpg.Home.get("Gameplay.Board").camera.x/Trpg.Home.get("Gameplay.Board").cumZoom()*this.container.cumZoom();
-									//this.container.y =-Trpg.Home.get("Gameplay.Board").camera.y;
-									//this.startx = 32*(wl.dist(Trpg.board.cloc))+Trpg.Home.get("Gameplay.Board").camera.relx(0)
-									//this.starty = 32*(wl.y()-Trpg.board.cloc.y())-Trpg.Home.get("Gameplay.Board").camera.y;
-									//this.container.x = this.startx-Trpg.board.mx;
-									///this.container.y = this.starty-Trpg.board.my;
-									//var center = this.container.getcenter();
-									//var ccont = this.container.container.c;
-									//if (!ccont.inbounds.apply(ccont,this.container.getcenter()))
-									//	console.log(ccont.x+" "+ccont.y+" "+ccont.w+" "+ccont.h);
-									if (this.container.removeme)// || this.container.container.inbounds(this.container.))
+									this.container.x = 410+Trpg.board.cloc.dx(wl)*32*z-z*Trpg.board.mx;
+									this.container.y = 417+Trpg.board.cloc.dy(wl)*32*z-z*Trpg.board.my;
+									if (this.container.removeme)
 										this.container.container.remove(this.container);
 								}
 							})
-							//menu.rl = 1;
 							if (Trpg.invent.hasitem("BronzeBar",1))
 							menu.add(new UI.Button(0,0*35,135,35).sets({text:"Dagger",onclick:function(){
 								if (Trpg.invent.hasitem("BronzeBar",1))
@@ -2289,7 +2374,7 @@ function TileRpgFramework(){
 								menu.removeme = true;
 								
 							}}));
-							console.log(Trpg.invent.hasitem("BronzeBar",3));
+							//console.log(Trpg.invent.hasitem("BronzeBar",3));
 							if (Trpg.invent.hasitem("BronzeBar",3))
 							menu.add(new UI.Button(0,2*35,135,35).sets({text:"Kite",onclick:function(){
 								if (Trpg.invent.hasitem("BronzeBar",3))
@@ -2495,7 +2580,7 @@ function TileRpgFramework(){
 					var wl = this.wl;
 					switch (action) {
 						case "chop":
-							var timer = new Utils.Timer(2.2).start().setAuto(true,function(){
+							var timer = new Utils.Timer(1.2).start().setAuto(true,function(){
 								Trpg.board.setTile(new Trpg.Tile("Stump"),wl);
 								Trpg.invent.additem(new Trpg.Item("Log"));
 							}).setKilloncomp(true);
@@ -2506,6 +2591,9 @@ function TileRpgFramework(){
 						case "search":
 							var timer = new Utils.Timer(.4).start().setAuto(true,function(){
 								if (hasseed){
+									Trpg.board.container.add(new feedback("You find a seed",
+									Trpg.board.cloc.dx(wl)*32+16+Trpg.board.container.camera.x,
+									Trpg.board.cloc.dy(wl)*32+Trpg.board.container.camera.y,1.5),"feedback");
 									Trpg.invent.additem(new Trpg.Item("Seed"))
 									hasseed = false;
 								}
@@ -2584,10 +2672,13 @@ function TileRpgFramework(){
 				this.doaction = function(action){
 					if (!exists(action))
 						action = this.getActions()[0];
-					var wl = this.wl;
+					var wl = this.wl.copy();
 					switch (action) {
 						case "fuel":
-							//var timer = new Utils.Timer(1).start().setAuto(true,function(){
+							//var timer = new Utils.Timer(1).start().setAuto(true,function
+							/*	Trpg.board.container.add(new feedback("You add a log to the fire",
+								Trpg.board.cloc.dx(wl)*32+16+Trpg.board.container.camera.x,
+								Trpg.board.cloc.dy(wl)*32+Trpg.board.container.camera.y,1.5),"feedback");*/
 								Trpg.board.setTile(new Trpg.Tile("FireBig"),wl);
 							//	Trpg.invent.removeitem()
 							// }).setKilloncomp(true);
@@ -2681,14 +2772,97 @@ function TileRpgFramework(){
 				}
 				return this;
 			},
+			Chest:function(){
+				this.type = "Chest";
+				this.actions = ["open"];
+				this.traits.walkable = true;
+				this.newcontents = function(){
+					var items = [];
+					for (var i = 0; i < Math.random()*2+1; i++)
+						(function(){
+							var rng = Math.random();
+							if (rng<.05)
+							;//	items.push(new Trpg.Item("Gold").setamt(Math.random()*500+500));
+							//else if (rng < .4)
+							//	items.push(new Trpg.Item("Gold").setamt(Math.random()*50));
+							else if (rng < .5)
+								items.push(new Trpg.Item("Bronze"+(["Dagger","Helm","Kite","Legs","Body"][Math.floor(Math.random()*5)])));
+							else if (rng < .6)
+								for (var j = 0; j < Math.random()*4; j++)
+									items.push(new Trpg.Item("BronzeBar"));
+							else
+								for (var j = 0; j < Math.random()*3; j++)	
+									items.push(new Trpg.Item(["Tin","Copper"][Math.floor(Math.random()*2)]));
+							/*else 
+								for (var j)
+							else if (rng < .8)
+								for (var j = 0; j < Math.random()*3; j++)	items.push(new Trpg.Item("Tin"));
+							else 
+								for (var j = 0; j < Math.random()*3; j++)	items.push(new Trpg.Item("Copper"));
+								*/
+						})();
+					this.contents = {
+						items:items
+					};
+				}
+				this.newcontents();
+				this.opened = false;
+				this.doaction = function(action){
+					if (!exists(action))	action = this.getActions()[0];
+					var wl = this.wl;
+					var that = this;
+					switch (action){
+						case "open":
+							if (this.opened)	return;
+							var timer = new Utils.Timer(1).start().setAuto(true,function(){
+								for (var i = 0; i < that.contents.items.length; i++)
+									if (Trpg.invent.getempty()>0)
+										Trpg.invent.additem(that.contents.items[i]);
+									else
+										Trpg.board.ground.dropitem(that.contents.items[i],wl);
+								that.opened = true;
+							}).setKilloncomp(true);
+							timer.board = true;
+							timer.wl = wl;
+							Trpg.Home.add(timer,"Gameplay.currentaction");
+							break;
+					}
+				}
+				this.load = function(save){
+					this.ground = save.ground;
+					this.opened = JSON.parse(save.opened);
+					//new Trpg.WorldLoc().load(JSON.parse(save.dest));
+				}
+				this.save = function(){
+					return {
+						type:this.type,
+						ground:this.ground,
+						count:0,//exists(this.growtimer) ? this.growtimer.count : 0
+						opened:JSON.stringify(this.opened)
+					}
+				}
+				this.render = function(g){
+					g.fillStyle = "yellow";
+					g.drawImage(Ast.i(this.ground),0,0);
+					var text = this.opened ? "Empty" : "Chest";
+					Drw.drawCText(g,text,16,16);
+					//g.fillText("Chest",)
+					//g.drawImage(Ast.i("dirt"),0,0);
+				}
+				return this;
+			},
 			Dirt:function(){
 				this.type = "Dirt";
 				this.actions = ["dig"];
+				//if (Math.random() < .01) return new Trpg.Tile("Chest");
+				//else return new Trpg.Tile("StoneFloor");
+				this.chest = Math.random() < .02 ? new Trpg.Tile("Chest") : -1;
 				//this.traits.burnable = true;
 				//this.traits.walkable = true;
 				this.doaction = function(action){
 					if (!exists(action))	action = this.getActions()[0];
 					var wl = this.wl;
+					var that = this;
 					switch (action){
 						case "dig":
 							if (!(Trpg.board.getTile(wl.copy().shift(0,1)).traits.walkable
@@ -2696,8 +2870,11 @@ function TileRpgFramework(){
 							  ||Trpg.board.getTile(wl.copy().shift(1,0)).traits.walkable
 							  ||Trpg.board.getTile(wl.copy().shift(-1,0)).traits.walkable))
 							  break;
-							var timer = new Utils.Timer(.1).start().setAuto(true,function(){
-								Trpg.board.setTile(new Trpg.Tile("StoneFloor"),wl);
+							var timer = new Utils.Timer(.3).start().setAuto(true,function(){
+								if (that.chest !== -1)
+									Trpg.board.setTile(that.chest,wl);
+								else 
+									Trpg.board.setTile(new Trpg.Tile("StoneFloor"),wl);
 							}).setKilloncomp(true);
 							timer.board = true;
 							timer.wl = wl;
@@ -2725,9 +2902,65 @@ function TileRpgFramework(){
 				}
 				return this;
 			},
+			Ore:function(type){
+				this.type = type+"Ore";
+				this.actions = ["dig"];
+				this.item = type;
+				switch (type){
+					case "Tin":
+					case "Copper":	this.digrate = 1;	break;
+					case "Iron":	this.digrate = 2;	break;
+					case "Mithril":	this.digrate = 3;	break;
+					case "Adamant":	this.digrate = 5;	break;
+					case "Runite":	this.digrate = 8;	break;
+					case "Eternium":this.digrate = 20;	break;
+				}
+				this.getdefground = function(wl){
+					switch (wl.dim){
+						case "underground1":	return "dirt";
+					}
+				}
+				this.doaction = function(action){
+					if (!exists(action))	action = this.getActions()[0];
+					var wl = this.wl;
+					var that = this;
+					switch (action){
+						case "dig":
+							var adjs = wl.getadjs();
+							var reachable = false;
+							for (var i = 0; i < adjs.length; i++)
+								if (Trpg.board.getTile(adjs[i]).traits.walkable)
+									reachable = true;
+							if (!reachable)	break;
+							var timer = new Utils.Timer(that.digrate).start().setAuto(true,function(){
+								switch(wl.dim){
+									case "underground1":	Trpg.board.setTile(new Trpg.Tile("StoneFloor"),wl);	break;
+									//case "underground1":	Trpg.board.setTile(new Trpg.Tile("StoneFloor"),wl);	break;
+								}
+								Trpg.invent.additem(new Trpg.Item(that.item));
+							}).setKilloncomp(true);
+							timer.board = true;
+							timer.wl = wl;
+							Trpg.Home.add(timer,"Gameplay.currentaction");
+							break;
+					}
+				}
+				this.render = function(g){
+					g.drawImage(Ast.i(this.ground),0,0);
+					g.drawImage(Ast.i(this.item.toLowerCase()+"ore"),0,0);
+				}
+				return this;
+			},
 			TinOre:function(){
+				return tiles.Ore.call(this,"Tin");
+			},
+			CopperOre:function(){
+				return tiles.Ore.call(this,"Copper");
+			},
+			/*TinOre:function(){
 				this.type = "TinOre";
 				this.actions = ["dig"];
+				this.ground = "dirt";
 				this.doaction = function(action){
 					if (!exists(action))	action = this.getActions()[0];
 					var wl = this.wl;
@@ -2738,7 +2971,7 @@ function TileRpgFramework(){
 							  ||Trpg.board.getTile(wl.copy().shift(1,0)).traits.walkable
 							  ||Trpg.board.getTile(wl.copy().shift(-1,0)).traits.walkable))
 							  break;
-							var timer = new Utils.Timer(.7).start().setAuto(true,function(){
+							var timer = new Utils.Timer(1).start().setAuto(true,function(){
 								Trpg.board.setTile(new Trpg.Tile("StoneFloor"),wl);
 								Trpg.invent.additem(new Trpg.Item("Tin"));
 							}).setKilloncomp(true);
@@ -2757,6 +2990,7 @@ function TileRpgFramework(){
 			CopperOre:function(){
 				this.type = "CopperOre";
 				this.actions = ["dig"];
+				this.ground = "dirt";
 				this.doaction = function(action){
 					if (!exists(action))	action = this.getActions()[0];
 					var wl = this.wl;
@@ -2767,7 +3001,7 @@ function TileRpgFramework(){
 							  ||Trpg.board.getTile(wl.copy().shift(1,0)).traits.walkable
 							  ||Trpg.board.getTile(wl.copy().shift(-1,0)).traits.walkable))
 							  break;
-							var timer = new Utils.Timer(.7).start().setAuto(true,function(){
+							var timer = new Utils.Timer(1).start().setAuto(true,function(){
 								Trpg.board.setTile(new Trpg.Tile("StoneFloor"),wl);
 								Trpg.invent.additem(new Trpg.Item("Copper"));
 							}).setKilloncomp(true);
@@ -2782,8 +3016,8 @@ function TileRpgFramework(){
 					g.drawImage(Ast.i("copperore"),0,0);
 				}
 				return this;
-			},
-			BlueOre:function(){
+			},*/
+			/*BlueOre:function(){
 				this.type = "BlueOre";
 				//this.actions = ["dig"];
 				//this.traits.burnable = true;
@@ -2809,13 +3043,13 @@ function TileRpgFramework(){
 							Trpg.Home.add(timer,"Gameplay.currentaction");
 							break;
 					}
-				}*/
+				}*
 				this.render = function(g){
 					g.drawImage(Ast.i(this.ground),0,0);
 					g.drawImage(Ast.i("blueore"),0,0);
 				}
 				return this;
-			}
+			}*/
 		}
 		return tiles[type].apply(new Default());
 	}
