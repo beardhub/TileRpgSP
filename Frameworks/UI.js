@@ -496,10 +496,12 @@ function UIFramework(){
 		//	else return x;
 		//else return x;
 	}
-	this.DBox.prototype.mouseonbox = function(m){return m.relx(this)>0&&m.relx(this)<this.w*this.container.cumZoom()&&m.rely(this)>0&&m.rely(this)<this.h*this.container.cumZoom();}
+	this.DBox.prototype.mouseonbox = function(m){
+		if (this.container == -1)	return false;
+		return m.relx(this)>0&&m.relx(this)<this.w*this.container.cumZoom()&&m.rely(this)>0&&m.rely(this)<this.h*this.container.cumZoom();}
 	this.DBox.prototype.screenx = function(xx){
 		var x = (this.x + this.camera.relx(xx))//*this.camera.getzoom();
-		if (typeof this.container !== "undefined")
+		if (typeof this.container !== "undefined" && this.container !== -1)
 			if (typeof this.container.screenx !== "undefined")
 				return this.container.screenx(x);
 			else return x;
@@ -509,7 +511,7 @@ function UIFramework(){
 	//}
 	this.DBox.prototype.screeny = function(yy){
 		var y = (this.y + this.camera.rely(yy));//*this.camera.getzoom();
-		if (typeof this.container !== "undefined")
+		if (typeof this.container !== "undefined" && this.container !== -1)
 			if (typeof this.container.screeny !== "undefined")
 				return this.container.screeny(y);
 			else return y;
