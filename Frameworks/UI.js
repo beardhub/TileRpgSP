@@ -262,12 +262,15 @@ function UIFramework(){
 		}
 		this.mouseevent = function(type,e,m){
 			//console.log(type);
+			//console.log(this.invisible);
+			if (this.invisible)
+				console.log(this.invisible);
 			if (this.hidden || this.frozen || this.invisible)	return;
 			for (var j = rrng.max; j >= rrng.min; j--)
 				for (var i = q.length-1; i >= 0; i--)
 					if (exists(q[i]))
 						if (q[i].rl==j)
-							if (typeof q[i]["mouse"+type] !== "undefined")
+							if (typeof q[i]["mouse"+type] !== "undefined"  && !q[i].invisible)
 								if (q[i]["mouse"+type](e,m))
 									return true;
 			return this.mouseonbox(m)&&!this.transparent;}
@@ -361,6 +364,8 @@ function UIFramework(){
 								for (var i = 0; i < q.length; i++)
 									if (q[i].rl==j)
 										temprender(g,q[i]);
+							this.camera.unstep(g);
+							renderAfter.call(this,g);
 							return;}
 			for (var j = rrng.min; j <= rrng.max; j++)
 				for (var i = 0; i < q.length; i++)
