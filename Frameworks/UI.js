@@ -53,11 +53,6 @@ function UIFramework(){
 			if (this.isOver(m) && this.down)	this.onclick.call(this);
 			this.down = false;
 		}
-		this.sets = function(obj){
-			for (p in obj)
-				this[p] = obj[p];
-			return this;
-		}
 		this.isOver = function(m){
 			return 	m.relx(this)>0 && m.relx(this)<this.w*this.container.cumZoom() &&
 					m.rely(this)>0 && m.rely(this)<this.h*this.container.cumZoom();

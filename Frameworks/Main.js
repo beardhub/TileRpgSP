@@ -103,3 +103,8 @@ function extend(sub, sup){sub.prototype = Object.create(sup.prototype);}
 function size(obj){var s = 0;for (var p in obj)if (obj.hasOwnProperty(p))s++;return s;}
 function exists(thing){return (typeof thing !== "undefined");}
 function existsAndIs(thing, is){return exists(thing) && thing == is;}
+Object.prototype.sets = function(sets){
+		for (var p in sets)
+			this[p] = sets[p];
+		return this;
+	}
