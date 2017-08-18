@@ -16,7 +16,7 @@ function init(){
 	{f:KeysFramework,n:"K"},
 	{f:UIFramework,n:"UI"},
 	{f:UtilsFramework,n:"Utils"},
-	//{f:PhysicsFramework,n:"Physics"},
+	// {f:PhysicsFramework,n:"Physics"},
 	{f:AssetsFramework,n:"Ast"},
 	{f:DrawingFramework,n:"Drw"},
 	{f:MouseFramework,n:"Ms"},
@@ -68,39 +68,60 @@ addScripts("Libraries/",["seedrandom.js"]);
 addScripts("",["TileRpg.js"]);
 function assetsbit(){
 	Ast.setPath("assets/");
-	Ast.loadImage("grass","Grass.png");
-	Ast.loadImage("tree","Tree.png");
-	Ast.loadImage("sapling","Sapling.png");
-	Ast.loadImage("seedling","Seedling.png");
+	//{misc
+	Ast.loadImage("hole","Hole.png");//}
+	//{woodcutting
 	Ast.loadImage("deadseedling","DeadSeedling.png");
+	Ast.loadImage("seedling","Seedling.png");
+	Ast.loadImage("sapling","Sapling.png");
+	Ast.loadImage("tree","Tree.png");
 	Ast.loadImage("stump","Stump.png");
-	Ast.loadImage("hole","Hole.png");
-	Ast.loadImage("log","Log.png");
-	Ast.loadImage("ladderdown","LadderDown.png");
-	Ast.loadImage("ladderup","LadderUp.png");
+	Ast.loadImage("log","Log.png");//}
+	//{grounds
+	Ast.loadImage("grass","Grass.png");
 	Ast.loadImage("dirt","Dirt.png");
+	Ast.loadImage("stone","Stone.png");//}
+	//{smithing
 	Ast.loadImage("furnace","Furnace.png");
 	Ast.loadImage("anvil","Anvil.png");
+	//{bars
 	Ast.loadImage("bronzebar","BronzeBar.png");
-	Ast.loadImage("ironbar","IronBar.png");
+	Ast.loadImage("ironbar","IronBar.png");//}
+	//{armor//}
+	//{weapons//}//}
+	//{mining
+	//{ores
+	Ast.loadImage("tinore","TinOre.png");
+	Ast.loadImage("copperore","CopperOre.png");
+	Ast.loadImage("coalore","CoalOre.png");
+	Ast.loadImage("ironore","IronOre.png");
+	//Ast.loadImage("mithrilore","MithrilOre.png");
+	//Ast.loadImage("adamantore","AdamantOre.png");
+	//Ast.loadImage("runiteore","RuniteOre.png");
+	Ast.loadImage("eterniumore","EterniumOre.png");//}
+	//}
+	//{portals
+	Ast.loadImage("ladderdown","LadderDown.png");
+	Ast.loadImage("ladderup","LadderUp.png");
 	Ast.loadImage("bportal","BluePortal.png");
-	Ast.loadImage("gportal","GreyPortal.png");
+	Ast.loadImage("gportal","GreyPortal.png");//}
+	//{walls
 	Ast.loadImage("cwallu","CastleWallUp.png");
 	Ast.loadImage("cwalll","CastleWallL.png");
 	Ast.loadImage("cwallt","CastleWallT.png");
 	Ast.loadImage("cwallx","CastleWallX.png");
 	Ast.loadImage("cwallv","CastleWallVert.png");
-	Ast.loadImage("cwallc","CastleWallCenter.png");
-	Ast.loadImage("stone","Stone.png");
-	Ast.loadImage("tinore","TinOre.png");
-	Ast.loadImage("copperore","CopperOre.png");
-	Ast.loadImage("blueore","BlueOre.png");
+	Ast.loadImage("cwallc","CastleWallCenter.png");//}
+	//{fires
 	Ast.loadImage("firebig","FireBig.png");
-	Ast.loadImage("firesmall","FireSmall.png");
-	Ast.loadImage("ploweddirt","PlowedDirt.png");
+	Ast.loadImage("firesmall","FireSmall.png");//}
+	//{farming
+	Ast.loadImage("ploweddirt","PlowedDirt.png");//}
+	//{player
 	Ast.loadImage("playerN","PlayerN.png");
 	Ast.loadImage("playerS","PlayerS.png");
 	Ast.loadImage("playerE","PlayerE.png");
-	Ast.loadImage("playerW","PlayerW.png");
+	Ast.loadImage("playerW","PlayerW.png");//}
+	
 	Ast.load();
 }
