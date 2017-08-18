@@ -696,7 +696,10 @@ function TileRpgFramework(){
 				return this;
 			},
 			BronzeBar:function(){
+				//console.log(this);
 				return items.Bar.call(this,"Bronze");
+				//return this;
+				//return items.Bar("Bronze");
 			},
 			BronzeDagger:function(){
 				this.type = "BronzeDagger";
@@ -833,7 +836,9 @@ function TileRpgFramework(){
 				return this;
 			},
 		}
-		return items[type].apply(new Default());
+		var i = items[type].apply(new Default());
+		console.log(i);
+		return i;
 	}
 	this.Map = new (function(){
 		/*this.chunks = [];
@@ -867,8 +872,8 @@ function TileRpgFramework(){
 			//	this.tiles.push(o);
 		}
 		this.init = function(){
-			this.r = 26;
-			this.s = 8;
+			this.r = 30;
+			this.s = 6;
 			this.container.camera.centerZero();
 			//this.invisible = true;
 		}
@@ -878,8 +883,8 @@ function TileRpgFramework(){
 				//this.container.fullscreen = !this.container.fullscreen;
 				//return;
 				if (this.container.fullscreen){
-					this.r = 26;
-					this.s = 8;
+					this.r = 30;
+					this.s = 6;
 					this.container.x = 800;
 					this.container.y = 0;
 					this.container.w = 400;
@@ -889,8 +894,8 @@ function TileRpgFramework(){
 					Trpg.Home.get("Gameplay.Menus").invisible = false;
 					
 				} else {//*
-					this.r = 26;
-					this.s = 16;
+					this.r = 35;
+					this.s = 12;
 					this.container.x = 0;
 					this.container.y = 0;
 					this.container.w = 800;
@@ -1122,8 +1127,11 @@ function TileRpgFramework(){
 			//	return;
 			// }
 			//var tile = Trpg.board.getTile(wl);
-			if (Trpg.invent.using != -1)
-				return Trpg.invent.using.useon(tile);
+			if (Trpg.invent.using != -1){
+				Trpg.invent.using.useon(tile);
+				Trpg.invent.using = -1;
+				return;
+			}
 			//console.log("not using");
 			if (tile.getActions().length == 0)
 				return;
@@ -3070,7 +3078,7 @@ function TileRpgFramework(){
 				this.chest = Math.random() < .05 ? new Trpg.Tile("Chest") : -1;
 				//this.traits.burnable = true;
 				//this.traits.walkable = true;
-					var that = this;
+				var that = this;
 				this.forcetimer = new Utils.Timer(.3).setAuto(true,function(){
 								if (that.chest !== -1)
 									Trpg.board.setTile(that.chest,that.wl);
@@ -3152,11 +3160,21 @@ function TileRpgFramework(){
 						case "underground1":	return "dirt";
 					}
 				}
+				var that = this;
+				this.forcetimer = new Utils.Timer(this.digrate).setAuto(true,function(){
+								Trpg.board.setTile(new Trpg.Tile("Stone"),that.wl);
+								Trpg.invent.additem(new Trpg.Item(that.item));
+							});
 				this.doaction = function(action){
 					if (!exists(action))	action = this.getActions()[0];
 					var wl = this.wl;
 					var that = this;
 					switch (action){
+						case "walkon":
+							this.forcing = true;
+							if (!this.forcetimer.running)
+								this.forcetimer.start();
+							break;
 						case "dig":
 							var adjs = wl.getadjs();
 							var reachable = false;
@@ -3177,10 +3195,17 @@ function TileRpgFramework(){
 							break;
 					}
 				}
+				this.update = function(d){
+					if (this.forcing)	this.forcetimer.update(d);
+					else this.forcetimer.count = 0;
+					this.forcing = false;
+					
+				}
 				this.render = function(g){
 					g.drawImage(Ast.i(this.ground),0,0);
 					//g.drawImage(Ast.i("eternium"+"ore"),0,0);
 					g.drawImage(Ast.i(this.item.toLowerCase()+"ore"),0,0);
+					this.forcetimer.renderp(g);
 				}
 				return this;
 			},
