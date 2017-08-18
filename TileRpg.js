@@ -1325,7 +1325,7 @@ function TileRpgFramework(){
 				case "Space":
 					this.running = !this.running;
 					break;
-				case "CapsLock":
+				case "ControlLeft":
 					this.forcing = !this.forcing;
 					break;
 			}
