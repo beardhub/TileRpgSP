@@ -1486,10 +1486,10 @@ function TileRpgFramework(){
 			this.dx = 0;
 			this.dy = 0;
 			
-			if (K.Keys.W.down)	this.dy--;
-			if (K.Keys.A.down)	this.dx--;
-			if (K.Keys.S.down)	this.dy++;
-			if (K.Keys.D.down)	this.dx++;
+			if (K.Keys.W.down || K.Keys.up.down)	this.dy--;
+			if (K.Keys.A.down || K.Keys.left.down)	this.dx--;
+			if (K.Keys.S.down || K.Keys.down.down)	this.dy++;
+			if (K.Keys.D.down || K.Keys.right.down)	this.dx++;
 			//if (this.d = [])
 			//	return;
 			//var dr = this.d[0];//this.mq;
