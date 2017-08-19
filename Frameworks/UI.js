@@ -95,6 +95,11 @@ function UIFramework(){
 			g.fillStyle = this.pcolor;
 			g.fillRect(this.x+2,this.y+2,this.w-4,this.h-4);
 		}
+		var adjusted = false;
+		this.adjust = function(g){
+			g.font = ""+(this.h*.5)+"px Arial";
+			if (!adjusted)	adjusted = this.w = g.measureText(this.text).width+this.h*2;
+		}
 		this.render = function(g){
 			this.rbefore(g);
 			this.inrender.call(this,g);
