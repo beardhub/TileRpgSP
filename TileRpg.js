@@ -289,7 +289,19 @@ function TileRpgFramework(){
 		Trpg.world = this;
 		Trpg.board = new Trpg.Board();
 		Trpg.invent = new Trpg.Invent();
-		//Trpg.invent.additem(new Trpg.Item("Tinderbox"));
+		Trpg.invent.additem(new Trpg.Item("BronzeBar"));
+		Trpg.invent.additem(new Trpg.Item("IronBar"));
+		Trpg.invent.additem(new Trpg.Item("SteelBar"));
+		Trpg.invent.additem(new Trpg.Item("MithrilBar"));
+		Trpg.invent.additem(new Trpg.Item("AdamantBar"));
+		Trpg.invent.additem(new Trpg.Item("RuniteBar"));
+		Trpg.invent.additem(new Trpg.Item("EterniumBar"));
+		Trpg.invent.additem(new Trpg.Item("BronzeDagger"));
+		Trpg.invent.additem(new Trpg.Item("BronzeHelm"));
+		Trpg.invent.additem(new Trpg.Item("BronzeBody"));
+		Trpg.invent.additem(new Trpg.Item("BronzeLegs"));
+		Trpg.invent.additem(new Trpg.Item("BronzeKite"));
+		Trpg.invent.additem(new Trpg.Item("Hammer"));
 		//Trpg.invent.additem(new Trpg.Item("Hoe"));
 		//Trpg.invent.additem(new Trpg.Item("Hammer"));
 		//Trpg.invent.additem(new Trpg.Item("Ladder"));
@@ -551,13 +563,14 @@ function TileRpgFramework(){
 			this.useon = function(on){	}
 			this.getActions = function(){	return this.actions;	}
 			this.hasAction = function(action){	return this.getActions().indexOf(action)!=-1;}
-			this.render = function(g,x,y){}
+			this.render = function(g,x,y){
+				g.drawImage(Ast.i(this.type.toLowerCase()),x,y);
+			}
 		}
 		var items = {
 			Log:function(){
 				this.type = "Log";
 				var that = this;
-				this.actions = ["use","drop"];
 				this.useon = function(on){
 					Trpg.invent.using = -1;
 					switch (on.type){
@@ -599,13 +612,6 @@ function TileRpgFramework(){
 							break;
 					}
 				}
-				this.render = function(g,x,y){
-					
-					g.drawImage(Ast.i("log"),x,y);
-					g.fillStyle = "yellow";
-					if (this.stackable)
-						g.fillText(this.amt,x+5,y+10);
-				}
 				return this;
 			},
 			Seed:function(){
@@ -620,14 +626,6 @@ function TileRpgFramework(){
 							on.doaction("plant");
 							Trpg.invent.removeitem(this);
 							break;
-						//case "FireSmall":
-							//var timer = new Utils.Timer(1).start().setAuto(true,function(){
-								//Trpg.board.setTile(new Trpg.Tile("FireBig"),on.wl);
-								//Trpg.invent.removeitem(that);
-							// }).setKilloncomp(true);
-							//timer.board = false;
-							//timer.space = this.space;
-							//Trpg.Home.add(timer,"Gameplay.currentaction");
 					}
 				}
 				this.render = function(g,x,y){
@@ -640,133 +638,48 @@ function TileRpgFramework(){
 			},
 			Tin:function(){
 				this.type = "Tin";
-				this.actions = ["use","drop"];
-				this.useon = function(on){
-					Trpg.invent.using = -1;
-				}
-				this.doaction = function(action){
-					if (!exists(action))	action = this.getActions()[0];
-					switch (action){
-						case "use":
-							Trpg.invent.using = this;
-							break;
-						case "drop":
-							Trpg.invent.dropitem(this);
-							break;
-					}
-				}
 				this.render = function(g,x,y){
 					g.drawImage(Ast.i("tinore"),x,y);
-					g.fillStyle = "yellow";
-					if (this.stackable)
-						g.fillText(this.amt,x+5,y+10);
 				}
 				return this;
 			},
 			Copper:function(){
 				this.type = "Copper";
-				this.actions = ["use","drop"];
-				this.useon = function(on){
-					Trpg.invent.using = -1;
-				}
-				this.doaction = function(action){
-					if (!exists(action))	action = this.getActions()[0];
-					switch (action){
-						case "use":
-							Trpg.invent.using = this;
-							break;
-						case "drop":
-							Trpg.invent.dropitem(this);
-							break;
-					}
-				}
 				this.render = function(g,x,y){
 					g.drawImage(Ast.i("copperore"),x,y);
-					g.fillStyle = "yellow";
-					if (this.stackable)
-						g.fillText(this.amt,x+5,y+10);
 				}
 				return this;
 			},
+			//{bars
 			Bar:function(type){
 				this.type = type+"Bar";
-				this.render = function(g,x,y){
-					g.drawImage(Ast.i(type.toLowerCase()+"bar"),x,y);
-				}
 				return this;
 			},
-			BronzeBar:function(){
-				//console.log(this);
-				return items.Bar.call(this,"Bronze");
-				//return this;
-				//return items.Bar("Bronze");
-			},
-			BronzeDagger:function(){
-				this.type = "BronzeDagger";
-				this.render = function(g,x,y){
-					//g.drawImage(Ast.i("bronzebar"),x,y);
-					g.fillStyle = "yellow";
-					Drw.drawCText(g,"Dagger",x+16,y+16);
-					//g.fillText("Dagger",x-5,y+20);
-					if (this.stackable)
-						g.fillText(this.amt,x+5,y+10);
-				}
+			BronzeBar:function(){return items.Bar.call(this,"Bronze");},
+			IronBar:function(){return items.Bar.call(this,"Iron");},
+			SteelBar:function(){return items.Bar.call(this,"Steel");},
+			MithrilBar:function(){return items.Bar.call(this,"Mithril");},
+			AdamantBar:function(){return items.Bar.call(this,"Adamant");},
+			RuniteBar:function(){return items.Bar.call(this,"Runite");},
+			EterniumBar:function(){return items.Bar.call(this,"Eternium");},
+			//}
+			//{weapons
+			Weapon:function(metal,type){
+				this.type = metal+type;
 				return this;
 			},
-			BronzeHelm:function(){
-				this.type = "BronzeHelm";
-				this.render = function(g,x,y){
-					//g.drawImage(Ast.i("bronzebar"),x,y);
-					g.fillStyle = "yellow";
-					g.fillText("Helm",x+5,y+20);
-					if (this.stackable)
-						g.fillText(this.amt,x+5,y+10);
-				}
+			BronzeDagger:function(){return items.Weapon.call(this,"Bronze","Dagger");},
+			//}
+			//{armor
+			Armor:function(metal,type){
+				this.type = metal+type;
 				return this;
 			},
-			BronzeKite:function(){
-				this.type = "BronzeKite";
-				this.render = function(g,x,y){
-					//g.drawImage(Ast.i("bronzebar"),x,y);
-					g.fillStyle = "yellow";
-					g.fillText("Kite",x+5,y+20);
-					if (this.stackable)
-						g.fillText(this.amt,x+5,y+10);
-				}
-				return this;
-			},
-			BronzeLegs:function(){
-				this.type = "BronzeLegs";
-				this.render = function(g,x,y){
-					//g.drawImage(Ast.i("bronzebar"),x,y);
-					g.fillStyle = "yellow";
-					g.fillText("Legs",x+5,y+20);
-					if (this.stackable)
-						g.fillText(this.amt,x+5,y+10);
-				}
-				return this;
-			},
-			BronzeBody:function(){
-				this.type = "BronzeBody";
-				this.render = function(g,x,y){
-					//g.drawImage(Ast.i("bronzebar"),x,y);
-					g.fillStyle = "yellow";
-					g.fillText("Body",x+5,y+20);
-					if (this.stackable)
-						g.fillText(this.amt,x+5,y+10);
-				}
-				return this;
-			},
-			IronBar:function(){
-				this.type = "IronBar";
-				this.render = function(g,x,y){
-					g.drawImage(Ast.i("ironbar"),x,y);
-					g.fillStyle = "yellow";
-					if (this.stackable)
-						g.fillText(this.amt,x+5,y+10);
-				}
-				return this;
-			},
+			BronzeHelm:function(){return items.Weapon.call(this,"Bronze","Helm");},
+			BronzeBody:function(){return items.Weapon.call(this,"Bronze","Body");},
+			BronzeLegs:function(){return items.Weapon.call(this,"Bronze","Legs");},
+			BronzeKite:function(){return items.Weapon.call(this,"Bronze","Kite");},
+			//}
 			Ladder:function(){
 				this.type = "Ladder";
 				this.render = function(g,x,y){
@@ -827,18 +740,12 @@ function TileRpgFramework(){
 			},
 			Hammer:function(){
 				this.type = "Hammer";
-				this.render = function(g,x,y){
-					g.fillStyle = "yellow";
-					g.fillText("Hammer",x-5,y+20);
-					if (this.stackable)
-						g.fillText(this.amt,x+5,y+10);
-				}
 				return this;
 			},
 		}
-		var i = items[type].apply(new Default());
-		console.log(i);
-		return i;
+		return items[type].apply(new Default());
+		//console.log(i);
+		//return i;
 	}
 	this.Map = new (function(){
 		/*this.chunks = [];
@@ -2234,8 +2141,8 @@ function TileRpgFramework(){
 						case "excavate":
 							var z = Trpg.Home.get("Gameplay.Board").camera.getzoom();
 							if (!Trpg.invent.hasitem("Ladder")){
-								//Trpg.board.container.add(new feedback("You need a ladder to go underground",
-								Trpg.Home.get("Gameplay.Menus").add(new feedback("You need a ladder to go underground",
+								Trpg.board.container.add(new feedback("You need a ladder to go underground",
+								//Trpg.Home.get("Gameplay").add(new feedback("You need a ladder to go underground",
 								Trpg.board.cloc.dx(wl)*32+16+Trpg.board.container.camera.x,
 								Trpg.board.cloc.dy(wl)*32+Trpg.board.container.camera.y,1.5),"feedback");
 								break;
@@ -2255,7 +2162,8 @@ function TileRpgFramework(){
 							break;
 						case "plant":
 							if (!Trpg.invent.hasitem("Seed")){
-								Trpg.Home.get("Gameplay.Menus").add(new feedback("You don't have any seeds",
+								Trpg.board.container.add(new feedback("You don't have any seeds to plant",
+								//Trpg.Home.get("Gameplay.Menus").add(new feedback("You don't have any seeds",
 								Trpg.board.cloc.dx(wl)*32+16+Trpg.board.container.camera.x,
 								Trpg.board.cloc.dy(wl)*32+Trpg.board.container.camera.y,1.5),"feedback");
 								return;
@@ -2875,7 +2783,7 @@ function TileRpgFramework(){
 			},
 			Chest:function(){
 				this.type = "Chest";
-				this.avecolor = "#000000";
+				this.avecolor = "#EFC700";
 				this.actions = ["open"];
 				this.traits.walkable = true;
 				this.setinfinite = function(inf){
@@ -3060,10 +2968,11 @@ function TileRpgFramework(){
 					}
 				}
 				this.render = function(g){
-					g.fillStyle = "yellow";
+					//g.fillStyle = "yellow";
 					g.drawImage(Ast.i(this.ground),0,0);
-					var text = this.empty ? "Empty" : "Chest";
-					Drw.drawCText(g,text,16,16);
+					g.drawImage(Ast.i(this.empty ? "bronzechestO" : "bronzechestC"),0,0);
+					//var text = this.empty ? "Empty" : "Chest";
+					//Drw.drawCText(g,text,16,16);
 					//g.fillText("Chest",)
 					//g.drawImage(Ast.i("dirt"),0,0);
 				}

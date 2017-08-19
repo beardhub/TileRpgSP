@@ -86,9 +86,23 @@ function assetsbit(){
 	Ast.loadImage("anvil","Anvil.png");
 	//{bars
 	Ast.loadImage("bronzebar","BronzeBar.png");
-	Ast.loadImage("ironbar","IronBar.png");//}
-	//{armor//}
-	//{weapons//}//}
+	Ast.loadImage("ironbar","IronBar.png");
+	Ast.loadImage("steelbar","SteelBar.png");
+	Ast.loadImage("mithrilbar","MithrilBar.png");
+	Ast.loadImage("adamantbar","AdamantBar.png");
+	Ast.loadImage("runitebar","RuniteBar.png");
+	Ast.loadImage("eterniumbar","EterniumBar.png");
+	//}
+	//{armor
+	Ast.loadImage("bronzehelm","BronzeHelm.png");
+	Ast.loadImage("bronzebody","BronzeBody.png");
+	Ast.loadImage("bronzelegs","BronzeLegs.png");
+	Ast.loadImage("bronzekite","BronzeKite.png");
+	//}
+	//{weapons
+	Ast.loadImage("bronzedagger","BronzeDagger.png");
+	//}
+	//}
 	//{mining
 	//{ores
 	Ast.loadImage("tinore","TinOre.png");
@@ -99,6 +113,15 @@ function assetsbit(){
 	//Ast.loadImage("adamantore","AdamantOre.png");
 	//Ast.loadImage("runiteore","RuniteOre.png");
 	Ast.loadImage("eterniumore","EterniumOre.png");//}
+	//}
+	//{tools
+	Ast.loadImage("hammer","Hammer.png");
+	//}
+	//{chests
+	Ast.loadImage("bronzechestC","BronzeChest.png");
+	Ast.loadImage("bronzechestO","BronzeChestOpen.png");
+	Ast.loadImage("ironchestC","IronChest.png");
+	Ast.loadImage("ironchestO","IronChestOpen.png");
 	//}
 	//{portals
 	Ast.loadImage("ladderdown","LadderDown.png");
