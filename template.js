@@ -98,6 +98,41 @@ function assetsbit(){
 	Ast.loadImage("bronzebody","BronzeBody.png");
 	Ast.loadImage("bronzelegs","BronzeLegs.png");
 	Ast.loadImage("bronzekite","BronzeKite.png");
+	
+	//Ast.loadImage("Ironhelm","IronHelm.png");
+	Ast.loadImage("ironbody","IronBody.png");
+	//Ast.loadImage("Ironlegs","IronLegs.png");
+	//Ast.loadImage("Ironkite","IronKite.png");
+	
+	//Ast.loadImage("Steelhelm","SteelHelm.png");
+	Ast.loadImage("steelbody","SteelBody.png");
+	//Ast.loadImage("Steellegs","SteelLegs.png");
+	//Ast.loadImage("Steelkite","SteelKite.png");
+	
+	//Ast.loadImage("Mithrilhelm","MithrilHelm.png");
+	Ast.loadImage("mithrilbody","MithrilBody.png");
+	//Ast.loadImage("Mithrillegs","MithrilLegs.png");
+	//Ast.loadImage("Mithrilkite","MithrilKite.png");
+	
+	//Ast.loadImage("Adamanthelm","AdamantHelm.png");
+	Ast.loadImage("adamantbody","AdamantBody.png");
+	//Ast.loadImage("Adamantlegs","AdamantLegs.png");
+	//Ast.loadImage("Adamantkite","AdamantKite.png");
+	
+	//Ast.loadImage("Runehelm","RuneHelm.png");
+	Ast.loadImage("runebody","RuneBody.png");
+	//Ast.loadImage("Runelegs","RuneLegs.png");
+	//Ast.loadImage("Runekite","RuneKite.png");
+	
+	//Ast.loadImage("Eterniumhelm","EterniumHelm.png");
+	Ast.loadImage("eterniumbody","EterniumBody.png");
+	//Ast.loadImage("Eterniumlegs","EterniumLegs.png");
+	//Ast.loadImage("Eterniumkite","EterniumKite.png");
+	
+	//Ast.loadImage("Eterniumhelm","EterniumHelm.png");
+	Ast.loadImage("dragonbody","DragonBody.png");
+	//Ast.loadImage("Eterniumlegs","EterniumLegs.png");
+	//Ast.loadImage("Eterniumkite","EterniumKite.png");
 	//}
 	//{weapons
 	Ast.loadImage("bronzedagger","BronzeDagger.png");
@@ -109,9 +144,9 @@ function assetsbit(){
 	Ast.loadImage("copperore","CopperOre.png");
 	Ast.loadImage("coalore","CoalOre.png");
 	Ast.loadImage("ironore","IronOre.png");
-	//Ast.loadImage("mithrilore","MithrilOre.png");
-	//Ast.loadImage("adamantore","AdamantOre.png");
-	//Ast.loadImage("runiteore","RuniteOre.png");
+	Ast.loadImage("mithrilore","MithrilOre.png");
+	Ast.loadImage("adamantore","AdamantOre.png");
+	Ast.loadImage("runiteore","RuniteOre.png");
 	Ast.loadImage("eterniumore","EterniumOre.png");//}
 	//}
 	//{tools
