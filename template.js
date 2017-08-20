@@ -156,6 +156,8 @@ function assetsbit(){
 	Ast.loadImage("hammer","Hammer.png");
 	//}
 	//{chests
+	Ast.loadImage("bankchestC","BankChest.png");
+	Ast.loadImage("bankchestO","BankChestOpen.png");
 	Ast.loadImage("bronzechestC","BronzeChest.png");
 	Ast.loadImage("bronzechestO","BronzeChestOpen.png");
 	Ast.loadImage("ironchestC","IronChest.png");
