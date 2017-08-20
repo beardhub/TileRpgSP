@@ -103,7 +103,9 @@ function UIFramework(){
 		var adjusted = false;
 		this.adjust = function(g){
 			g.font = ""+(this.h*.5)+"px Arial";
-			if (!adjusted)	adjusted = this.w = g.measureText(this.text).width+this.h*2;
+			//if (!adjusted)	
+			//	adjusted = 
+			this.w = g.measureText(this.text).width+this.h*2;
 		}
 		this.render = function(g){
 			this.rbefore(g);
