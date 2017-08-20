@@ -29,7 +29,9 @@ function init(){
 	if(smaller > M.canvas.height){smaller = M.canvas.height;larger = M.canvas.width;}
 	var UU=new UI.DBox(0,0,M.canvas.width,M.canvas.height);
 	//UU.camera.centerZero();
-	UU.camera.zoomto(smaller/1000);
+	//UU.camera.zoomto(smaller/1000);
+	//UU.add({rl:1,render:function(g){g.fillStyle = "yello";g.fillRect(this.container.camera.x,this.container.camera.y,10,10)}})
+	//UU.add({rl:1,render:function(g){g.fillStyle = "yello";g.fillRect(0,0,10,10)}})
 	// main dbox
 	makeShortcut(new UI.DBox(00,00,1000,1000),"U");
 	U.color="black";
@@ -42,13 +44,14 @@ function init(){
 		var dt=before-lasttime;
 		lasttime=before;
 		adt+=dt;
-		var t = 1/66;
+		var t = 1/50;
 		while (adt >= t){
 			adt-=t;
 			UU.update(t);
 			if (adt>5){
-				adt-=5;
-				UU.update(5);
+				adt = 0;
+				//adt-=5;
+				//UU.update(5);
 			}
 		}
 		//UU.update(dt);
@@ -57,7 +60,7 @@ function init(){
 		UU.render(g);
 	});
 	Ms.setcanvas(M.canvas);
-	Ms.setupListeners({down:U.mousedown.bind(U),up:U.mouseup.bind(U),move:U.mousemove.bind(U)/*up:function(m){U.mouseup(m);},moved:function(){},rclick:function(m){U.mouserclick(m);}*/});
+	Ms.setupListeners({down:UU.mousedown.bind(UU),up:UU.mouseup.bind(UU),move:UU.mousemove.bind(UU)/*up:function(m){U.mouseup(m);},moved:function(){},rclick:function(m){U.mouserclick(m);}*/});
 	var hub=new K.KeyHub();
 	hub.down=U.keydown.bind(U);
 	hub.up=U.keyup.bind(U);
