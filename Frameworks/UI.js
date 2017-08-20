@@ -7,7 +7,7 @@ function UIFramework(){
 		this.scale = scale || 1;
 		this.x = 0;
 		this.y = 0;
-		if (typeof offx == "number" && typeof offy == "number"){
+		if (exists(offx) && exists(offy)){//typeof offx == "number" && typeof offy == "number"){
 			this.x = offx;
 			this.y = offy;}
 		this.following = true;
@@ -29,8 +29,10 @@ function UIFramework(){
             this.container.remove(this);
 		if (typeof tx == "function") tx = this.target.x();
 		if (typeof ty == "function") ty = this.target.y();
-		this.follower.x = this.scale * (tx + this.x);
-		this.follower.y = this.scale * (ty + this.y);
+		if (typeof this.x == "function") this.follower.x = this.x(tx);
+		else this.follower.x = this.scale * (tx + this.x);
+		if (typeof this.y == "function") this.follower.y = this.y(ty);
+		else this.follower.y = this.scale * (ty + this.y);
 	}
 	this.Button = function(x,y,w,h){
 		this.x = x || 0;
@@ -41,6 +43,7 @@ function UIFramework(){
 		this.ccolor = "grey";
 		this.bcolor = "darkgrey";
 		this.color = "clear";
+		this.alphamod = 1;
 		this.key = "";
 		this.pcolor = "black";
 		this.text = "";
@@ -69,6 +72,8 @@ function UIFramework(){
 		this.rbefore = function(g){
 			g.save()
 			g.translate(this.x,this.y);
+			if (this.alphamod > 0 && this.alphamod != 1)
+				g.globalAlpha*=this.alphamod;
 			if (!this.transparent&&this.ccolor!=="clear"){
 				g.fillStyle = this.ccolor;
 				g.fillRect(0,0,this.w,this.h);}
@@ -80,7 +85,7 @@ function UIFramework(){
 		}
 		this.rafter = function(g){
 			g.restore();
-			g.strokeStyle = this.bcolor;
+			g.strokeStyle = this.bcolor == "clear" ? "rgba(0,0,0,0)" : this.bcolor;
 			g.lineWidth = 4;
 			g.strokeRect(this.x,this.y,this.w,this.h);
 			if (this.color!=="clear"){
@@ -110,37 +115,15 @@ function UIFramework(){
 			}
 			this.rafter(g);
 		}
-	}/*
-	this.TBox = function(x,y,w,h){
-		var tbox = new that.DBox(x,y,w,h);
-		tbox.curtab = "";
-		tbox.newtab = function(name, box){
-			box = box || new that.DBox();//tbox.x,tbox.y,tbox.w,tbox.h);
-			box.hidden = true;
-			tbox.add(box,name);
-		}
-		tbox.settab = function(name){
-			if (!tbox.has(name))
-				return;
-			if (tbox.curtab!=="")
-				tbox.get(tbox.curtab).hidden = true;
-			tbox.get(name).hidden = false;
-			tbox.curtab = name;
-		}
-		return tbox;
-	}*/
+	}
 	this.DBox = function(x,y,w,h){
 		this.x = x || 0;
 		this.y = y || 0;
 		this.w = w || 0;
 		this.h = h || 0;
 		this.alphamod = 1;
-		//var border = new dynimage(Assets.i("boxborder")),
-		//	corner = new dynimage(Assets.i("boxcorner"));
-		//this.borders = true;
 		this.cropped = this.w>0&&this.h>0;
 		this.transparent = false;
-		//this.edges = false;
 		this.color = "clear";
 		this.bcolor = "clear";
 		this.pcolor = "black";
@@ -502,7 +485,7 @@ function UIFramework(){
 		//else return x;
 	}
 	this.DBox.prototype.mouseonbox = function(m){
-		if (this.container == -1)	return false;
+		if (!exists(this.container) || this.container == -1)	return false;
 		return m.relx(this)>0&&m.relx(this)<this.w*this.container.cumZoom()&&m.rely(this)>0&&m.rely(this)<this.h*this.container.cumZoom();}
 	this.DBox.prototype.screenx = function(xx){
 		var x = (this.x + this.camera.relx(xx))//*this.camera.getzoom();
@@ -514,13 +497,32 @@ function UIFramework(){
 	//this.DBox.prototype.screenx = function(x){
 	//	x*camer.zoom+w/2
 	//}
+	//container coords -> screen takes an x and returns container.x+(x-camera.x+camera.w/2)/camera.scale
 	this.DBox.prototype.screeny = function(yy){
+		var y = this.y+this.camera.rely(yy);
+		return (this.container && this.container.screeny(y)) || y;
+		
 		var y = (this.y + this.camera.rely(yy));//*this.camera.getzoom();
 		if (typeof this.container !== "undefined" && this.container !== -1)
 			if (typeof this.container.screeny !== "undefined")
 				return this.container.screeny(y);
 			else return y;
 		else return y;}
+			//this.relx = function(x){
+			//	return (x*scale - this.x*scale + this.w/2);//*scale;
+			//}
+	//
+	//screen -> my = by + y*s - cy*s + cw/2
+	//box -> y = my/s - by/s + cy - cw/2/s
+	// y = (my-by+cy*s-cw/2)/s
+	this.DBox.prototype.boxx = function(x,container){
+		x = (this.container && this.container.boxx(x)) || x;
+		return (x-this.x+this.camera.x*this.camera.getzoom()-this.camera.w/2)/this.camera.getzoom(); 
+	}
+	this.DBox.prototype.boxy = function(y,container){
+		y = (this.container && this.container.boxy(y)) || y;
+		return (y-this.y+this.camera.y*this.camera.getzoom()-this.camera.h/2)/this.camera.getzoom(); 
+	}
 	this.DBox.prototype.mousedown = (function(e,m){	return this.mouseevent.apply(this,["down",e,m]);});
 	this.DBox.prototype.mouseup = function(e,m){	return this.mouseevent.apply(this,["up",e,m]);}
 	this.DBox.prototype.mousemove = function(e,m){	return this.mouseevent.apply(this,["move",e,m]);}
