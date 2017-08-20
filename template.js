@@ -102,43 +102,49 @@ function assetsbit(){
 	Ast.loadImage("bronzelegs","BronzeLegs.png");
 	Ast.loadImage("bronzekite","BronzeKite.png");
 	
-	//Ast.loadImage("Ironhelm","IronHelm.png");
+	Ast.loadImage("ironhelm","IronHelm.png");
 	Ast.loadImage("ironbody","IronBody.png");
-	//Ast.loadImage("Ironlegs","IronLegs.png");
-	//Ast.loadImage("Ironkite","IronKite.png");
+	Ast.loadImage("ironlegs","IronLegs.png");
+	Ast.loadImage("ironkite","IronKite.png");
 	
-	//Ast.loadImage("Steelhelm","SteelHelm.png");
+	Ast.loadImage("steelhelm","SteelHelm.png");
 	Ast.loadImage("steelbody","SteelBody.png");
-	//Ast.loadImage("Steellegs","SteelLegs.png");
-	//Ast.loadImage("Steelkite","SteelKite.png");
+	Ast.loadImage("steellegs","SteelLegs.png");
+	Ast.loadImage("steelkite","SteelKite.png");
 	
-	//Ast.loadImage("Mithrilhelm","MithrilHelm.png");
+	Ast.loadImage("mithrilhelm","MithrilHelm.png");
 	Ast.loadImage("mithrilbody","MithrilBody.png");
-	//Ast.loadImage("Mithrillegs","MithrilLegs.png");
-	//Ast.loadImage("Mithrilkite","MithrilKite.png");
+	Ast.loadImage("mithrillegs","MithrilLegs.png");
+	Ast.loadImage("mithrilkite","MithrilKite.png");
 	
-	//Ast.loadImage("Adamanthelm","AdamantHelm.png");
+	Ast.loadImage("adamanthelm","AdamantHelm.png");
 	Ast.loadImage("adamantbody","AdamantBody.png");
-	//Ast.loadImage("Adamantlegs","AdamantLegs.png");
-	//Ast.loadImage("Adamantkite","AdamantKite.png");
+	Ast.loadImage("adamantlegs","AdamantLegs.png");
+	Ast.loadImage("adamantkite","AdamantKite.png");
 	
-	//Ast.loadImage("Runehelm","RuneHelm.png");
+	Ast.loadImage("runehelm","RuneHelm.png");
 	Ast.loadImage("runebody","RuneBody.png");
-	//Ast.loadImage("Runelegs","RuneLegs.png");
-	//Ast.loadImage("Runekite","RuneKite.png");
+	Ast.loadImage("runelegs","RuneLegs.png");
+	Ast.loadImage("runekite","RuneKite.png");
 	
-	//Ast.loadImage("Eterniumhelm","EterniumHelm.png");
+	Ast.loadImage("eterniumhelm","EterniumHelm.png");
 	Ast.loadImage("eterniumbody","EterniumBody.png");
-	//Ast.loadImage("Eterniumlegs","EterniumLegs.png");
-	//Ast.loadImage("Eterniumkite","EterniumKite.png");
+	Ast.loadImage("eterniumlegs","EterniumLegs.png");
+	Ast.loadImage("eterniumkite","EterniumKite.png");
 	
-	//Ast.loadImage("Eterniumhelm","EterniumHelm.png");
+	//Ast.loadImage("dragonhelm","DragonHelm.png");
 	Ast.loadImage("dragonbody","DragonBody.png");
-	//Ast.loadImage("Eterniumlegs","EterniumLegs.png");
-	//Ast.loadImage("Eterniumkite","EterniumKite.png");
+	//Ast.loadImage("dragonlegs","DragonLegs.png");
+	//Ast.loadImage("dragonkite","DragonKite.png");
 	//}
 	//{weapons
 	Ast.loadImage("bronzedagger","BronzeDagger.png");
+	Ast.loadImage("irondagger","IronDagger.png");
+	Ast.loadImage("steeldagger","SteelDagger.png");
+	Ast.loadImage("mithrildagger","MithrilDagger.png");
+	Ast.loadImage("adamantdagger","AdamantDagger.png");
+	Ast.loadImage("runedagger","RuneDagger.png");
+	Ast.loadImage("eterniumdagger","EterniumDagger.png");
 	//}
 	//}
 	//{mining
@@ -154,6 +160,7 @@ function assetsbit(){
 	//}
 	//{tools
 	Ast.loadImage("hammer","Hammer.png");
+	Ast.loadImage("knife","Knife.png");
 	//}
 	//{chests
 	Ast.loadImage("bankchestC","BankChest.png");
