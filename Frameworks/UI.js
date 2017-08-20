@@ -57,6 +57,8 @@ function UIFramework(){
 			this.down = false;
 		}
 		this.isOver = function(m){
+			if (!exists(this.container) || this.container == -1)
+				return false;
 			return 	m.relx(this)>0 && m.relx(this)<this.w*this.container.cumZoom() &&
 					m.rely(this)>0 && m.rely(this)<this.h*this.container.cumZoom();
 		}
@@ -89,14 +91,14 @@ function UIFramework(){
 			g.lineWidth = 4;
 			g.strokeRect(this.x,this.y,this.w,this.h);
 			if (this.color!=="clear"){
-				g.globalAlpha = .35;
+				g.globalAlpha = .5;
 				g.strokeStyle = g.fillStyle = this.color;
 				g.fillRect(this.x,this.y,this.w,this.h);
 				g.strokeRect(this.x,this.y,this.w,this.h);
 			}
 			if (!(this.down && this.over))
 				return;
-			g.globalAlpha = .35;
+			g.globalAlpha = .5;
 			g.fillStyle = this.pcolor;
 			g.fillRect(this.x+2,this.y+2,this.w-4,this.h-4);
 		}
