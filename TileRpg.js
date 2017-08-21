@@ -4502,9 +4502,10 @@ function TileRpgFramework(){
 						var orow = [];
 						for (var j = 0; j < 8; j++){
 							var t = (function(){
-								if (Math.random()<.002)
+								var r = Math.random();
+								if (r<.002)
 									return new Trpg.Tile("AlchingStand");
-								else if (Math.random()<.1)
+								else if (r<.1)
 									return new Trpg.Tile("Tree");
 								else return new Trpg.Tile("Grass");
 							})().setWl(this.wl.copy().shift(j,i));
