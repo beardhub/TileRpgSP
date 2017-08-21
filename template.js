@@ -72,7 +72,9 @@ addScripts("",["TileRpg.js"]);
 function assetsbit(){
 	Ast.setPath("assets/");
 	//{misc
-	Ast.loadImage("hole","Hole.png");//}
+	Ast.loadImage("hole","Hole.png");
+	Ast.loadImage("alchingstand","AlchingStand.png");
+	Ast.loadImage("coin","Coin.png");//}
 	//{woodcutting
 	Ast.loadImage("deadseedling","DeadSeedling.png");
 	Ast.loadImage("seedling","Seedling.png");
@@ -173,8 +175,9 @@ function assetsbit(){
 	//{portals
 	Ast.loadImage("ladderdown","LadderDown.png");
 	Ast.loadImage("ladderup","LadderUp.png");
-	Ast.loadImage("bportal","BluePortal.png");
-	Ast.loadImage("gportal","GreyPortal.png");//}
+	Ast.loadImage("portal","BluePortal.png");
+	//Ast.loadImage("gportal","GreyPortal.png");
+	//}
 	//{walls
 	Ast.loadImage("cwallu","CastleWallUp.png");
 	Ast.loadImage("cwalll","CastleWallL.png");

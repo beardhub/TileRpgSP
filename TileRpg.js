@@ -138,8 +138,8 @@ function TileRpgFramework(){
 			var b,h,i,m,M;
 			g.add(b = new UI.DBox(0,0,800,800),"Board");
 			//g.add(h = new UI.DBox(800,0,400,800),"Hud");
-			g.add(i = new UI.DBox(800,300,400,500),"Invent");
 			g.add(m = new UI.DBox(800,0,400,300),"Minimap");
+			g.add(i = new UI.DBox(800,300,400,500),"Invent");
 			g.add(M = new UI.DBox(),"Menus");
 			//M.camera.zoom(2);
 			i.color = "rgb(96,96,96)";
@@ -152,7 +152,7 @@ function TileRpgFramework(){
 			H.settab("TitleMenu");
 		}
 			H.add(new UI.Button(500,500,200,50).sets({color:"red",text:"Instructions",key:"i",onclick:function(){U.settab("Instructions")}}),"TitleMenu.");*/
-	}
+	}/*
 			H.add(new Utils.KeyListener("down","1",function(){	Trpg.invent.additem(new Trpg.Item("TinOre"))		}));
 			H.add(new Utils.KeyListener("down","2",function(){	Trpg.invent.additem(new Trpg.Item("CopperOre"))		}));
 			H.add(new Utils.KeyListener("down","3",function(){	Trpg.invent.additem(new Trpg.Item("IronOre"))		}));
@@ -160,8 +160,12 @@ function TileRpgFramework(){
 			H.add(new Utils.KeyListener("down","5",function(){	Trpg.invent.additem(new Trpg.Item("AdamantOre"))	}));
 			H.add(new Utils.KeyListener("down","6",function(){	Trpg.invent.additem(new Trpg.Item("RuniteOre"))		}));
 			H.add(new Utils.KeyListener("down","7",function(){	Trpg.invent.additem(new Trpg.Item("EterniumOre"))	}));
-			H.add(new Utils.KeyListener("down","8",function(){	for (var i = 0; i < 5; i++)
-																Trpg.invent.additem(new Trpg.Item("CoalOre"));		}));
+			H.add(new Utils.KeyListener("down","o",function(){	Trpg.invent.additem(new Trpg.Item("Coin"),5000)	}));
+			H.add(new Utils.KeyListener("down","p",function(){	Trpg.invent.additem(new Trpg.Item("Coin"),500000)	}));
+			H.add(new Utils.KeyListener("down","9",function(){	Trpg.invent.additem(new Trpg.Item("Coin"),500000000)	}));
+			H.add(new Utils.KeyListener("down","0",function(){	Trpg.invent.additem(new Trpg.Item("Coin"),500000000000)	}));
+			H.add(new Utils.KeyListener("down","8",function(){	//for (var i = 0; i < 50000; i++)
+			*/							//						Trpg.invent.additem(new Trpg.Item("CoalOre"));		}));
 			/*H.add(new Utils.KeyListener("down","o",function(){
 				Trpg.invent.additem(new Trpg.Item("Tin"));
 				Trpg.invent.additem(new Trpg.Item("Copper"));
@@ -494,19 +498,27 @@ function TileRpgFramework(){
 			if (s<0||s>34)	return -1;
 			return this.spaces[s];
 		}
-		this.additem = function(item){
-			if (item.stackable)
+		this.additem = function(item,amt){
+			if (amt == 0) return;
+			amt = amt || 1;
+			console.log(amt);
+			if (item.stackable){
 				for (var i = 0; i < this.size; i++)
 					if (this.spaces[i].type == item.type){
-						this.spaces[i].amt++;
+						this.spaces[i].amt+=amt;
 						return;
 					}
-			if (this.getempty() == 0)	return;
-			for (var i = 0; i < this.size; i++)
+				for (var i = 0; i < this.size; i++)
+					if (this.spaces[i]=="empty")
+						return this.spaces[i] = item.sets({amt:amt});
+				return;
+			}
+			if (this.getempty() < amt)	return;
+			for (var i = 0; i < this.size && amt > 0; i++)
 				if (this.spaces[i]=="empty"){
 					this.spaces[i] = item;
 					item.space = i;
-					return;
+					amt--;
 				}
 		}
 		this.getsave = function(){
@@ -615,6 +627,8 @@ function TileRpgFramework(){
 	this.Item = function(type){
 		function Default(){
 			this.type = "default";
+			this.alchable = true;
+			this.alchvalue = 0;
 			this.board = false;
 			this.stackable = false;
 			this.infinite = false;
@@ -684,9 +698,36 @@ function TileRpgFramework(){
 			this.hasAction = function(action){	return this.getActions().indexOf(action)!=-1;}
 			this.render = function(g,x,y){
 				g.drawImage(Ast.i(this.type.toLowerCase()),x,y);
+				g.font = "8px Arial";
+				g.fillStyle = "yellow";
+				var text = this.amt;
+				var mod = "";
+				if (text >= Math.pow(10,10)){
+					text = Math.floor(text/1000000000);
+					mod = "b"
+					g.fillStyle = "cyan";
+				}
+				if (text >= Math.pow(10,7)){
+					text = Math.floor(text/1000000);
+					mod = "m"
+					g.fillStyle = "#41DB00";
+				}
+				if (text >= Math.pow(10,5)){
+					text = Math.floor(text/1000);
+					mod = "k"
+					g.fillStyle = "white";
+				}
+				if (this.stackable)
+					g.fillText(text+mod,x+2,y+7);
 			}
 		}
 		var items = {
+			Coin:function(){
+				this.type = "Coin";
+				this.stackable = true;
+				this.alchable = false;
+				return this;
+			},
 			Log:function(){
 				this.type = "Log";
 				var that = this;
@@ -770,7 +811,7 @@ function TileRpgFramework(){
 			},
 			TinOre:function(){return items.Ore.call(this,"Tin")},
 			CopperOre:function(){return items.Ore.call(this,"Copper")},
-			CoalOre:function(){return items.Ore.call(this,"Coal")},
+			CoalOre:function(){/*this.stackable = true;*/return items.Ore.call(this,"Coal")},
 			IronOre:function(){return items.Ore.call(this,"Iron")},
 			MithrilOre:function(){return items.Ore.call(this,"Mithril")},
 			AdamantOre:function(){return items.Ore.call(this,"Adamant")},
@@ -778,8 +819,9 @@ function TileRpgFramework(){
 			EterniumOre:function(){return items.Ore.call(this,"Eternium")},
 			//}
 			//{bars
-			Bar:function(type){
+			Bar:function(type,alch){
 				this.type = type+"Bar";
+				this.alchvalue = alch;
 				var metals = {
 					EterniumBar:[{t:"EterniumOre",a:1},{t:"CoalOre",a:12}],
 					RuniteBar:[{t:"RuniteOre",a:1},{t:"CoalOre",a:8}],
@@ -815,13 +857,13 @@ function TileRpgFramework(){
 				}
 				return this;
 			},
-			BronzeBar:function(){return items.Bar.call(this,"Bronze")},
-			IronBar:function(){return items.Bar.call(this,"Iron")},
-			SteelBar:function(){return items.Bar.call(this,"Steel")},
-			MithrilBar:function(){return items.Bar.call(this,"Mithril")},
-			AdamantBar:function(){return items.Bar.call(this,"Adamant")},
-			RuniteBar:function(){return items.Bar.call(this,"Runite")},
-			EterniumBar:function(){return items.Bar.call(this,"Eternium")},
+			BronzeBar:function(){return items.Bar.call(this,"Bronze",5)},
+			IronBar:function(){return items.Bar.call(this,"Iron",10)},
+			SteelBar:function(){return items.Bar.call(this,"Steel",25)},
+			MithrilBar:function(){return items.Bar.call(this,"Mithril",50)},
+			AdamantBar:function(){return items.Bar.call(this,"Adamant",100)},
+			RuniteBar:function(){return items.Bar.call(this,"Runite",200)},
+			EterniumBar:function(){return items.Bar.call(this,"Eternium",1000)},
 			//}
 			//{weapons
 			Weapon:function(metal,type){
@@ -999,6 +1041,7 @@ function TileRpgFramework(){
 			//	this.tiles.push(o);
 		}
 		this.init = function(){
+		//	this.rl = 1;
 			this.r = 30;
 			this.s = 6;
 			this.container.camera.centerZero();
@@ -1009,7 +1052,7 @@ function TileRpgFramework(){
 			if (this.container.mouseonbox(m)){
 				//this.container.fullscreen = !this.container.fullscreen;
 				
-			Trpg.board.setTile(new Trpg.Tile("Chest"),new Trpg.WorldLoc(-1,1,5,5));return;
+			//Trpg.board.setTile(new Trpg.Tile("Chest"),new Trpg.WorldLoc(-1,1,5,5));return;
 				if (this.container.fullscreen){
 					this.r = 30;
 					this.s = 6;
@@ -1274,7 +1317,7 @@ function TileRpgFramework(){
 		var z = Trpg.Home.get("Gameplay.Board").camera.getzoom();
 		var menu = new Trpg.Menu(
 			400+Trpg.board.cloc.dx(wl)*32*z-z*Trpg.board.mx,
-			400+Trpg.board.cloc.dy(wl)*32*z-z*Trpg.board.my);
+			420+Trpg.board.cloc.dy(wl)*32*z-z*Trpg.board.my);
 		menu.add({
 			keydown:function(k){
 				menu.close(true);
@@ -1315,7 +1358,7 @@ function TileRpgFramework(){
 							wlbefore = this.tile.wl.copy();
 					}*/
 					
-					
+					if (this.over == "map")	return this.tile = "empty";
 					var before = (this.tile.getstate && this.tile.getstate())||"empty";
 					
 					if (this.over == "invent")
@@ -1333,13 +1376,14 @@ function TileRpgFramework(){
 					if (this.over == "invent" && Trpg.invent.withdrawing !== -1){
 						this.withdrawing = true;
 						holder.menu.removeall();
-						var that = this;
+						//var that = this;
 						var withdrawing = Trpg.invent.withdrawing;
-						holder.menu.additem(function(){
+						withdrawing.getwithdraw(this.tile,holder.menu);
+						/*holder.menu.additem(function(){
 							//var item = Trpg.invent.getaim();
 							if (that.tile !== "empty")
 								withdrawing.deposit(that.tile);
-						},"Deposit","white");
+						},"Deposit","white");*/
 					}
 					if (this.withdrawing && this.over == "board"){
 						Trpg.invent.withdrawing = -1;
@@ -1399,6 +1443,13 @@ function TileRpgFramework(){
 					if (this.container.menu.has("item0") && holder.menu.hidden)
 						text = this.container.menu.get("item0").text;
 					g.font = "25px Arial";
+					g.fillStyle = "white";
+					g.globalAlpha = .5;
+					var w = g.measureText(text).width;
+					var h = g.measureText("M").width;
+					if (text !== "")
+						g.fillRect(holder.menu.x+15-w/2-5,holder.menu.y-h,w+10,h+10);
+					g.globalAlpha = 1;
 					g.fillStyle = "black";
 					Drw.drawCText(g,text,holder.menu.x+15,holder.menu.y-5);
 					return;
@@ -1424,6 +1475,9 @@ function TileRpgFramework(){
 					else if (Trpg.invent.container.mouseonbox(m))
 						this.over = "invent";
 					else this.tile = "empty";
+					if (Trpg.Map.container.mouseonbox(m))
+						//alert("fe34rgh")
+						this.over = "map";
 				},
 				mousedown:function(e,m){
 					
@@ -1460,7 +1514,8 @@ function TileRpgFramework(){
 							//this.container.menu.get("item0").onclick.call
 					} else if (e.button == 2){
 						if (!holder.menu.hidden)return;
-						this.tile.fillmenu(holder.menu);
+						if (this.tile !== "empty")
+							this.tile.fillmenu(holder.menu);
 						//this.container.x = holder.menu.container.boxx(m.x);
 						//this.container.y = holder.menu.container.boxy(m.y);
 						holder.menu.open(holder.boxx(m.x)-15,holder.boxy(m.y)-15);
@@ -3051,7 +3106,10 @@ function TileRpgFramework(){
 				}
 			}
 			this.update = function(d){}
-			this.render = function(g){}
+			this.render = function(g){
+				g.drawImage(Ast.i(this.ground),0,0);
+				g.drawImage(Ast.i(this.type.toLowerCase()),0,0);
+			}
 		}
 		var tiles = {	
 			Void:function(){
@@ -3185,10 +3243,6 @@ function TileRpgFramework(){
 							break;
 					}
 				}
-				this.render = function(g){
-					g.drawImage(Ast.i(this.ground),0,0);
-					g.drawImage(Ast.i("hole"),0,0);
-				}
 				return this;
 			},
 			Portal:function(){
@@ -3230,19 +3284,20 @@ function TileRpgFramework(){
 						count:0,//exists(this.growtimer) ? this.growtimer.count : 0
 						dest:JSON.stringify(this.destwl)
 					}
-				}
+				}/*
 				this.render = function(g){
 					g.drawImage(Ast.i(this.ground),0,0);
 					g.drawImage(Ast.i("bportal"),0,0);
-				}
+				}*/
 				return this;
 			},
 			LadderUp:function(){
-				var p = new Trpg.Tile("Portal");
-				p.type = "LadderUp";
-				p.avecolor = "#915E21";
+				tiles.Portal.call(this);
+				//var p = new Trpg.Tile("Portal");
+				this.type = "LadderUp";
+				this.avecolor = "#915E21";
 				//this.traits.walkable = true;
-				p.actions = ["climb"];
+				this.actions = ["climb"];
 				/*
 				//this.setdest = function(wl){
 				//	this.destwl = wl.copy();
@@ -3265,18 +3320,19 @@ function TileRpgFramework(){
 							break;
 					}
 				}*/
-				p.render = function(g){
-					g.drawImage(Ast.i(p.ground),0,0);
+				this.render = function(g){
+					g.drawImage(Ast.i(this.ground),0,0);
 					g.drawImage(Ast.i("ladderup"),0,0);
 				}
-				return p;
+				return this;
 			},
 			LadderDown:function(){
-				var p = new Trpg.Tile("Portal");
-				p.type = "LadderDown";
-				p.avecolor = "#915E21";
+				//var p = new Trpg.Tile("Portal");
+				tiles.Portal.call(this);
+				this.type = "LadderDown";
+				this.avecolor = "#915E21";
 				//this.traits.walkable = true;
-				p.actions = ["climb"];
+				this.actions = ["climb"];
 				/*
 				//this.setdest = function(wl){
 				//	this.destwl = wl.copy();
@@ -3298,12 +3354,51 @@ function TileRpgFramework(){
 							Trpg.board.load(Trpg.board.cloc,true);
 							break;
 					}
-				}*/
+				}*
 				p.render = function(g){
 					g.drawImage(Ast.i(this.ground),0,0);
 					g.drawImage(Ast.i("ladderdown"),0,0);
+				}*/
+				return this;
+			},
+			AlchingStand:function(){
+				this.type = "AlchingStand";
+				this.actions = ["alch"];
+				this.doaction = function(action){
+					if (!exists(action))
+						action = this.getActions()[0];
+					var wl = this.wl;
+					switch (action){
+						case "alch":
+							if (Trpg.invent.getempty() == 35){//.items.length == 0){
+								Trpg.board.container.add(new feedback("You have nothing to alch",
+								Trpg.board.cloc.dx(wl)*32+16+Trpg.board.container.camera.x,
+								Trpg.board.cloc.dy(wl)*32+Trpg.board.container.camera.y,1.5),"feedback");
+								return;
+							}
+							Trpg.invent.withdrawing = this;
+							break;
+					}
 				}
-				return p;
+				this.getwithdraw = function(item,menu){
+					var that = this;
+					var wl = this.wl;
+					/*if (!item.alchable){
+						Trpg.board.container.add(new feedback("You can't alch this item",
+						Trpg.board.cloc.dx(wl)*32+16+Trpg.board.container.camera.x,
+						Trpg.board.cloc.dy(wl)*32+Trpg.board.container.camera.y,1.5),"feedback");
+					}*/
+					if (item.alchable)
+					menu.additem(function(){
+						if (item !== "empty")
+							that.deposit(item);
+					},"Alch ("+item.alchvalue+")","yellow");
+				}
+				this.deposit = function(item){
+					Trpg.invent.removeitem(item);
+					Trpg.invent.additem(new Trpg.Item("Coin"),item.alchvalue);
+				}
+				return this;
 			},
 			Furnace:function(){
 				this.type = "Furnace";
@@ -3425,10 +3520,6 @@ function TileRpgFramework(){
 							Trpg.Home.add(timer,"Gameplay.currentaction");
 							break;
 					}
-				}
-				this.render = function(g){
-					g.drawImage(Ast.i(this.ground),0,0);
-					g.drawImage(Ast.i("furnace"),0,0);
 				}
 				return this;
 			},
@@ -4063,6 +4154,12 @@ function TileRpgFramework(){
 					this.makemenu();
 					return this;
 				}
+				this.getwithdraw = function(item,menu){
+					menu.additem(function(){
+						if (item !== "empty")
+							that.deposit(item);
+					},"Deposit","white");
+				}
 				/*this.setinfinite = function(inf){
 					this.infinite = inf;
 					return this;
@@ -4150,6 +4247,12 @@ function TileRpgFramework(){
 							that.menu.open();
 							break;
 						case "deposit":
+							if (Trpg.invent.getempty() == 35){//.items.length == 0){
+								Trpg.board.container.add(new feedback("You have nothing to deposit",
+								Trpg.board.cloc.dx(wl)*32+16+Trpg.board.container.camera.x,
+								Trpg.board.cloc.dy(wl)*32+Trpg.board.container.camera.y,1.5),"feedback");
+								return;
+							}
 							Trpg.invent.withdrawing = this;
 							break;
 					}
@@ -4185,6 +4288,9 @@ function TileRpgFramework(){
 					}
 				}
 				this.render = function(g){
+					if (this.contents.items.length == 0)
+						this.actions = ["deposit"];
+					else this.actions = ["open","deposit"];
 					//g.fillStyle = "yellow";
 					if (exists(this.menu) && this.menu.container!==-1)this.menu.adjwidths(g);
 					g.drawImage(Ast.i(this.ground),0,0);
@@ -4396,7 +4502,9 @@ function TileRpgFramework(){
 						var orow = [];
 						for (var j = 0; j < 8; j++){
 							var t = (function(){
-								if (Math.random()<.1)
+								if (Math.random()<.002)
+									return new Trpg.Tile("AlchingStand");
+								else if (Math.random()<.1)
 									return new Trpg.Tile("Tree");
 								else return new Trpg.Tile("Grass");
 							})().setWl(this.wl.copy().shift(j,i));
