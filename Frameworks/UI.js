@@ -320,7 +320,7 @@ function UIFramework(){
 			if (typeof name !== "string"){	console.log("Not a valid name: "+name);	return -1;}	var sub = "";
 			if (name.indexOf("^")==0)if (exists(this.container))	return this.container.get(name.substring(1));else this.get(name.substring(1));
 			if (name.indexOf(".")!==-1){sub = name.substring(name.indexOf(".")+1);name = name.substring(0,name.indexOf("."));}
-			if (typeof systems[name] !== "object"){	console.log("System not found: "+name);		return -1;}
+			if (typeof systems[name] !== "object"){	throw("System not found: "+name);		return -1;}
 			if (sub == "") return systems[name];
 			else return systems[name].get(sub);}
 		this.has = function(name){
