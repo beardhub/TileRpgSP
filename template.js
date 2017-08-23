@@ -49,6 +49,7 @@ function init(){
 			adt-=t;
 			UU.update(t);
 			if (adt>5){
+				UU.update(5);
 				adt = 0;
 				//adt-=5;
 				//UU.update(5);
@@ -74,7 +75,7 @@ function assetsbit(){
 	//{misc
 	Ast.loadImage("hole","Hole.png");
 	Ast.loadImage("alchingstand","AlchingStand.png");
-	Ast.loadImage("coin","Coin.png");//}
+	Ast.loadImage("coins","Coin.png");//}
 	//{woodcutting
 	Ast.loadImage("deadseedling","DeadSeedling.png");
 	Ast.loadImage("seedling","Seedling.png");
