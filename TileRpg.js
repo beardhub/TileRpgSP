@@ -4350,6 +4350,8 @@ function TileRpgFramework(){
 								}
 								else return that.makemenu();
 							}
+							Trpg.invent.additem(new Trpg.Item(a.type),a.amt);
+							items.splice(items.indexOf(a),1);
 						//	txt = a.type + (a.stackable?(" "+amt2text(a.amt)):"");
 						//	console.log(txt);
 						that.makemenu();
