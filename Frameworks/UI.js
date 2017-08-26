@@ -489,7 +489,7 @@ function UIFramework(){
 		//else return x;
 	}
 	this.DBox.prototype.mouseonbox = function(m){
-		if (!exists(this.container) || this.container == -1)	return false;
+		if (!exists(this.container) || this.container == -1 || this.hidden || this.invisible)	return false;
 		return m.relx(this)>0&&m.relx(this)<this.w*this.container.cumZoom()&&m.rely(this)>0&&m.rely(this)<this.h*this.container.cumZoom();}
 	this.DBox.prototype.screenx = function(xx){
 		var x = (this.x + this.camera.relx(xx))//*this.camera.getzoom();

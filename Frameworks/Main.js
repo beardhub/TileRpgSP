@@ -108,3 +108,6 @@ Object.prototype.sets = function(sets){
 			this[p] = sets[p];
 		return this;
 	}
+Number.prototype.mod = function(n) {
+    return ((this%n)+n)%n;
+};
