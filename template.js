@@ -72,6 +72,9 @@ addScripts("Libraries/",["seedrandom.js"]);
 addScripts("",["TileRpg.js"]);
 function assetsbit(){
 	Ast.setPath("assets/");
+	//{entities
+	Ast.loadImage("cow","Cow.png");
+	//}
 	//{misc
 	Ast.loadImage("hole","Hole.png");
 	Ast.loadImage("alchingstand","AlchingStand.png");
